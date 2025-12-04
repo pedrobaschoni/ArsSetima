@@ -1,0 +1,127 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2025-12-03T12:00:00Z",
+  "characters": [
+    {
+      "id": "char-001",
+      "name": "Elias Thorn",
+      "age": 28,
+      "appearance": "Cabelos escuros ondulados que caem sobre a testa, olhos cor de âmbar penetrantes. Uma cicatriz fina atravessa sua sobrancelha direita, lembrança de uma batalha esquecida. Altura média, porte atlético.",
+      "powers": ["Sétimo Sentido", "Manipulação de Sombras", "Visão do Passado"],
+      "goals": "Descobrir a verdadeira origem do Sétimo Poder e por que ele foi o escolhido. Proteger aqueles que não podem se defender das forças ocultas.",
+      "secrets": "Perdeu completamente a memória de três dias críticos há dois anos. Nesse período, algo fundamental aconteceu que mudou sua vida para sempre.",
+      "relations": ["char-002"],
+      "notes": "Inspiração: noir urbano + magia sombria. Protagonista complexo com passado misterioso. Luta interna constante entre poder e humanidade.",
+      "tags": ["Protagonista", "Magia Sombria", "Mistério"],
+      "createdAt": "2025-12-03T10:00:00Z",
+      "updatedAt": "2025-12-03T10:00:00Z"
+    },
+    {
+      "id": "char-002",
+      "name": "Morgana Vale",
+      "age": 156,
+      "appearance": "Aparência de 30 anos devido à magia. Cabelos prateados longos, olhos violeta brilhantes. Sempre usa vestes escuras com símbolos arcanos bordados em fio de prata.",
+      "powers": ["Magia Ancestral", "Imortalidade Parcial", "Telecinese"],
+      "goals": "Encontrar o artefato perdido que pode selar o portal entre mundos. Treinar Elias para seu verdadeiro destino.",
+      "secrets": "Foi quem deu o Sétimo Poder a Elias, mas ele não se lembra disso. Conhece a verdade sobre o que aconteceu nos três dias perdidos.",
+      "relations": ["char-001"],
+      "notes": "Mentora misteriosa. Guarda segredos antigos. Motivações nem sempre claras - pode ser aliada ou manipuladora.",
+      "tags": ["Mentora", "Magia Ancestral", "Enigmática"],
+      "createdAt": "2025-12-03T10:15:00Z",
+      "updatedAt": "2025-12-03T10:15:00Z"
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-001",
+      "name": "Beco das Brumas",
+      "description": "Uma rua estreita e sombria na Londres oculta, onde a realidade se torna tênue. As brumas aqui não são naturais - são manifestações de magia residual de séculos. Poucos mortais conseguem encontrar este lugar, e menos ainda saem ilesos. É aqui que Elias teve seu primeiro encontro com o sobrenatural.",
+      "tags": ["Londres Oculta", "Portal", "Perigoso"],
+      "createdAt": "2025-12-03T10:30:00Z",
+      "updatedAt": "2025-12-03T10:30:00Z"
+    },
+    {
+      "id": "loc-002",
+      "name": "Biblioteca Arcanum",
+      "description": "Escondida sob uma livraria antiquada em Bloomsbury, a Biblioteca Arcanum contém conhecimento proibido de mil anos. Suas estantes se estendem infinitamente, desafiando as leis da física. Cada livro aqui tem vontade própria e escolhe seus leitores. Morgana é a guardiã atual.",
+      "relatedCharacters": ["char-002"],
+      "tags": ["Biblioteca", "Conhecimento", "Dimensional"],
+      "createdAt": "2025-12-03T10:45:00Z",
+      "updatedAt": "2025-12-03T10:45:00Z"
+    }
+  ],
+  "events": [
+    {
+      "id": "evt-001",
+      "title": "A Noite do Sétimo",
+      "date": "2023-10-10",
+      "description": "A noite em que Elias Thorn manifestou pela primeira vez o lendário Sétimo Poder. Em meio a um ataque de criaturas sombrias no Beco das Brumas, algo despertou dentro dele. Uma explosão de energia púrpura varreu a área, dissipando as criaturas instantaneamente. Quando recuperou a consciência, três dias haviam se passado e ele não se lembrava de nada.",
+      "links": {
+        "characters": ["char-001", "char-002"],
+        "locations": ["loc-001"]
+      },
+      "category": "Evento Importante",
+      "importance": "high",
+      "createdAt": "2025-12-03T11:00:00Z",
+      "updatedAt": "2025-12-03T11:00:00Z"
+    },
+    {
+      "id": "evt-002",
+      "title": "O Encontro com Morgana",
+      "date": "2023-10-15",
+      "description": "Cinco dias após o despertar de seu poder, Elias é abordado por Morgana Vale na Biblioteca Arcanum. Ela revela que o conhecia há muito tempo e que ele tem um papel crucial em eventos que estão por vir. Ela oferece treiná-lo, mas Elias desconfia de suas verdadeiras intenções.",
+      "links": {
+        "characters": ["char-001", "char-002"],
+        "locations": ["loc-002"]
+      },
+      "category": "Desenvolvimento de Personagem",
+      "importance": "high",
+      "createdAt": "2025-12-03T11:15:00Z",
+      "updatedAt": "2025-12-03T11:15:00Z"
+    },
+    {
+      "id": "evt-003",
+      "title": "Primeira Lição de Controle",
+      "date": "2023-10-20",
+      "description": "Morgana inicia o treinamento de Elias para controlar o Sétimo Poder. A sessão quase termina em desastre quando Elias perde o controle e cria uma fissura temporal na biblioteca. Morgana consegue fechar a brecha, mas fica claro que o poder de Elias é muito mais perigoso do que imaginava.",
+      "links": {
+        "characters": ["char-001", "char-002"],
+        "locations": ["loc-002"]
+      },
+      "category": "Treinamento",
+      "importance": "medium",
+      "createdAt": "2025-12-03T11:30:00Z",
+      "updatedAt": "2025-12-03T11:30:00Z"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-001",
+      "title": "Ideia: Revelação do Capítulo 7",
+      "content": "E se Morgana não for quem diz ser? Talvez ela seja uma manifestação do próprio Sétimo Poder, testando Elias? Isso explicaria por que ela sabe tanto sobre os três dias perdidos - porque ela ERA aqueles três dias.",
+      "category": "Plot Twist",
+      "priority": "high",
+      "tags": ["Capítulo 7", "Morgana", "Revelação"],
+      "relatedTo": {
+        "characters": ["char-001", "char-002"]
+      },
+      "createdAt": "2025-12-03T12:00:00Z",
+      "updatedAt": "2025-12-03T12:00:00Z"
+    },
+    {
+      "id": "note-002",
+      "title": "Pesquisa: Mitologia do Sétimo Poder",
+      "content": "Pesquisar mais sobre numerologia mística - o número 7 em diferentes culturas. Sete pecados, sete virtudes, sete céus, sete selos do Apocalipse. O Sétimo Poder poderia ser uma síntese de todos os poderes arcanos anteriores. Talvez seja o poder da criação/destruição definitiva.",
+      "category": "Worldbuilding",
+      "priority": "medium",
+      "tags": ["Sistema de Magia", "Pesquisa"],
+      "createdAt": "2025-12-03T12:15:00Z",
+      "updatedAt": "2025-12-03T12:15:00Z"
+    }
+  ],
+  "spells": [],
+  "items": [],
+  "creatures": [],
+  "factions": [],
+  "chapters": []
+}
