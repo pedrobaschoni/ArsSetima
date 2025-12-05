@@ -29,8 +29,9 @@ const ENTITY_THEME: any = {
   creature: { color: '#10b981', icon: 'paw', label: 'Criatura' },
   faction: { color: '#f59e0b', icon: 'flag', label: 'Facção' },
   location: { color: Colors.secondary, icon: 'location', label: 'Local' },
-  // ADICIONADO: Tema para Eventos
   event: { color: Colors.accent, icon: 'time', label: 'Evento' },
+  curiosity: { color: '#0891b2', icon: 'bulb', label: 'Curiosidade' },
+  note: { color: '#8b5cf6', icon: 'document-text', label: 'Nota' },
 };
 
 const VIEW_CONFIG: any = {
@@ -75,7 +76,6 @@ const VIEW_CONFIG: any = {
       { key: 'goals', label: 'Objetivos', icon: 'telescope' },
     ]
   },
-  // ADICIONADO: Configuração para Eventos
   event: {
     table: 'events',
     stats: [
@@ -85,6 +85,24 @@ const VIEW_CONFIG: any = {
     sections: [
       { key: 'category', label: 'Categoria', icon: 'pricetag' },
       { key: 'description', label: 'Descrição', icon: 'document-text' },
+    ]
+  },
+  curiosity: {
+    table: 'curiosities',
+    stats: [],
+    sections: [
+      { key: 'content', label: 'Detalhes', icon: 'information-circle' },
+      { key: 'tags', label: 'Tags', type: 'list', icon: 'pricetags' },
+    ]
+  },
+  note: {
+    table: 'notes',
+    stats: [
+      { key: 'priority', label: 'Prioridade', icon: 'alert-circle' },
+    ],
+    sections: [
+      { key: 'content', label: 'Conteúdo', icon: 'document-text' },
+      { key: 'tags', label: 'Tags', type: 'list', icon: 'pricetags' },
     ]
   }
 };
@@ -105,19 +123,45 @@ export default function EntityDetailScreen({ route, navigation }: any) {
   }
 
   const config = VIEW_CONFIG[entityType];
+  
+  if (!config) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>Tipo de entidade não suportado.</Text>
+        <Button title="Voltar" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
+  
   let initialTheme = ENTITY_THEME[entityType] || { color: Colors.primary, icon: 'document' };
   
-  // Se for evento, ajusta a cor baseado na importância
   if (entityType === 'event' && initialData.importance) {
     switch (initialData.importance) {
       case 'high':
-        initialTheme = { ...initialTheme, color: '#ef4444' }; // Vermelho
+        initialTheme = { ...initialTheme, color: '#ef4444' };
         break;
       case 'medium':
-        initialTheme = { ...initialTheme, color: '#f59e0b' }; // Laranja/Âmbar
+        initialTheme = { ...initialTheme, color: '#f59e0b' };
         break;
       case 'low':
-        initialTheme = { ...initialTheme, color: '#10b981' }; // Verde
+        initialTheme = { ...initialTheme, color: '#10b981' };
+        break;
+    }
+  }
+  
+  if (entityType === 'note' && initialData.priority) {
+    switch (initialData.priority.toLowerCase()) {
+      case 'high':
+      case 'alta':
+        initialTheme = { ...initialTheme, color: '#ef4444' };
+        break;
+      case 'medium':
+      case 'média':
+        initialTheme = { ...initialTheme, color: '#f59e0b' };
+        break;
+      case 'low':
+      case 'baixa':
+        initialTheme = { ...initialTheme, color: '#10b981' };
         break;
     }
   }
@@ -184,23 +228,41 @@ export default function EntityDetailScreen({ route, navigation }: any) {
         const freshData = await databaseService.getById<any>(config.table, initialData.id);
         if (freshData) {
           const formatted = { ...freshData };
-          ['effects', 'powers', 'abilities'].forEach(key => {
+          ['effects', 'powers', 'abilities', 'tags'].forEach(key => {
              if (freshData[key]) formatted[key] = parseList(freshData[key]);
           });
           setData(formatted);
           
-          // Atualiza o tema se for evento
           if (entityType === 'event' && freshData.importance) {
             let newTheme = ENTITY_THEME[entityType];
             switch (freshData.importance) {
               case 'high':
-                newTheme = { ...newTheme, color: '#ef4444' }; // Vermelho
+                newTheme = { ...newTheme, color: '#ef4444' };
                 break;
               case 'medium':
-                newTheme = { ...newTheme, color: '#f59e0b' }; // Laranja/Âmbar
+                newTheme = { ...newTheme, color: '#f59e0b' };
                 break;
               case 'low':
-                newTheme = { ...newTheme, color: '#10b981' }; // Verde
+                newTheme = { ...newTheme, color: '#10b981' };
+                break;
+            }
+            setTheme(newTheme);
+          }
+          
+          if (entityType === 'note' && freshData.priority) {
+            let newTheme = ENTITY_THEME[entityType];
+            switch (freshData.priority.toLowerCase()) {
+              case 'high':
+              case 'alta':
+                newTheme = { ...newTheme, color: '#ef4444' };
+                break;
+              case 'medium':
+              case 'média':
+                newTheme = { ...newTheme, color: '#f59e0b' };
+                break;
+              case 'low':
+              case 'baixa':
+                newTheme = { ...newTheme, color: '#10b981' };
                 break;
             }
             setTheme(newTheme);
@@ -213,7 +275,7 @@ export default function EntityDetailScreen({ route, navigation }: any) {
 
   const handleExportPDF = async () => {
     let content = `<h1>${data.name || data.title}</h1><hr/>`;
-    content += `<p><strong>Descrição:</strong> ${data.description}</p>`;
+    content += `<p><strong>Descrição:</strong> ${data.description || data.content}</p>`;
     await pdfService.generateCustomPDF(data.name || data.title, content, `${data.name || data.title}.pdf`);
   };
 
@@ -258,12 +320,16 @@ export default function EntityDetailScreen({ route, navigation }: any) {
   const StatBadge = ({ icon, label, value, fieldKey }: any) => {
     if (!value) return null;
     
-    // Formata o valor baseado no tipo de campo
     let displayValue = value;
     if (fieldKey === 'importance') {
       displayValue = formatImportance(value);
     } else if (fieldKey === 'date') {
       displayValue = formatDate(value);
+    } else if (fieldKey === 'priority') {
+      const level = value.toLowerCase().trim();
+      if (level === 'low') displayValue = 'Baixa';
+      else if (level === 'medium') displayValue = 'Média';
+      else if (level === 'high') displayValue = 'Alta';
     }
     
     return (

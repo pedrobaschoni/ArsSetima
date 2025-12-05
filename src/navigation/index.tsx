@@ -14,7 +14,7 @@ import LocationScreen from '../screens/LocationScreen';
 import LocationDetailScreen from '../screens/LocationDetailScreen';
 import TimelineScreen from '../screens/TimelineScreen';
 import NotesScreen from '../screens/NotesScreen';
-import WritingScreen from '../screens/WritingScreen';
+// --- MUDANÇA: IMPORTAR NOVA TELA ---
 import SettingsScreen from '../screens/SettingsScreen';
 import SpellScreen from '../screens/SpellScreen';
 import ItemScreen from '../screens/ItemScreen';
@@ -22,6 +22,7 @@ import CreatureScreen from '../screens/CreatureScreen';
 import FactionScreen from '../screens/FactionScreen';
 import UniversalFormScreen from '../screens/UniversalFormScreen';
 import EntityDetailScreen from '../screens/EntityDetailScreen';
+import CuriositiesScreen from '@/screens/CuriositesScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -144,8 +145,8 @@ const MainTabs = () => {
             case 'Timeline':
               iconName = focused ? 'time' : 'time-outline';
               break;
-            case 'Writing':
-              iconName = focused ? 'create' : 'create-outline';
+            case 'Curiosities': // --- MUDANÇA: NOME DA ROTA ---
+              iconName = focused ? 'bulb' : 'bulb-outline'; // --- ÍCONE NOVO ---
               break;
             case 'Notes':
               iconName = focused ? 'document-text' : 'document-text-outline';
@@ -182,10 +183,11 @@ const MainTabs = () => {
         component={TimelineScreen}
         options={{ title: 'Linha do Tempo' }}
       />
+      {/* --- MUDANÇA: USANDO CURIOSITIES SCREEN --- */}
       <Tab.Screen
-        name="Writing"
-        component={WritingScreen}
-        options={{ title: 'Escrever' }}
+        name="Curiosities"
+        component={CuriositiesScreen}
+        options={{ title: 'Curiosidades' }}
       />
       <Tab.Screen
         name="Notes"

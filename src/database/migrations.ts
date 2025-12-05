@@ -143,6 +143,17 @@ class DatabaseService {
         updatedAt TEXT NOT NULL
       )`,
 
+      // Tabela de curiosidades (NOVA)
+      `CREATE TABLE IF NOT EXISTS curiosities (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        imageUri TEXT,
+        tags TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )`,
+
       // Tabela de capítulos
       `CREATE TABLE IF NOT EXISTS chapters (
         id TEXT PRIMARY KEY,
@@ -273,6 +284,7 @@ class DatabaseService {
       'items',
       'creatures',
       'factions',
+      'curiosities', // Adicionado aqui
       'chapters',
     ];
 

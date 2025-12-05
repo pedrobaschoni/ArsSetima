@@ -99,10 +99,9 @@ const ENTITY_CONFIG: any = {
     hasImage: false,
     fields: [
       { key: 'title', label: 'Título do Evento', type: 'text', required: true },
-      { key: 'date', label: 'Data (Ex: 10/10/2025 ou "Era Antiga")', type: 'text', required: true },
+      { key: 'date', label: 'Data', type: 'text', required: true },
       { key: 'description', label: 'Descrição do Evento', type: 'multiline', required: true },
       { key: 'category', label: 'Categoria', type: 'text' },
-      // MUDANÇA: Tipo 'select' com opções fixas
       { 
         key: 'importance', 
         label: 'Importância', 
@@ -115,6 +114,16 @@ const ENTITY_CONFIG: any = {
       },
     ],
   },
+  curiosity: {
+    label: 'Curiosidade',
+    table: 'curiosities',
+    hasImage: true,
+    fields: [
+      { key: 'title', label: 'Título', type: 'text', required: true },
+      { key: 'content', label: 'Conteúdo/Detalhe', type: 'multiline', required: true },
+      { key: 'tags', label: 'Tags/Categorias', type: 'list' },
+    ],
+  },
   note: {
     label: 'Nota',
     table: 'notes',
@@ -122,6 +131,16 @@ const ENTITY_CONFIG: any = {
     fields: [
       { key: 'title', label: 'Título', type: 'text', required: true },
       { key: 'content', label: 'Conteúdo', type: 'multiline', required: true },
+      { 
+        key: 'priority', 
+        label: 'Prioridade', 
+        type: 'select',
+        options: [
+          { label: 'Baixa', value: 'low', color: '#10b981' },
+          { label: 'Média', value: 'medium', color: '#f59e0b' },
+          { label: 'Alta', value: 'high', color: '#ef4444' }
+        ]
+      },
       { key: 'tags', label: 'Tags', type: 'list' },
     ],
   },
@@ -168,21 +187,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
           }
         }
         
-        // Converte data ISO para formato brasileiro ao editar
-        if (field.key === 'date' && preparedData[field.key]) {
-          const dateValue = preparedData[field.key];
-          // Verifica se é formato ISO (YYYY-MM-DD)
-          const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
-          const match = dateValue.match(isoDatePattern);
-          
-          if (match) {
-            const [, year, month, day] = match;
-            // Converte para formato brasileiro (DD/MM/YYYY)
-            preparedData[field.key] = `${day}/${month}/${year}`;
-          }
-          // Se não for ISO, mantém o valor original
-        }
-        
         if (typeof preparedData[field.key] === 'number') {
           preparedData[field.key] = preparedData[field.key].toString();
         }
@@ -193,9 +197,9 @@ export default function UniversalFormScreen({ route, navigation }: any) {
       const initialData: any = {};
       config.fields.forEach((field: any) => {
         if (field.type === 'list') initialData[field.key] = [];
-        // Define valor padrão para select se necessário (opcional)
+        // Define média como padrão para prioridade
         if (field.type === 'select' && field.options.length > 0) {
-           initialData[field.key] = field.options[1].value; // Default: Média
+           initialData[field.key] = field.options[1].value;
         }
       });
       setFormData(initialData);
@@ -251,21 +255,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
         if (field.type === 'number' && dataToSave[field.key]) {
           dataToSave[field.key] = parseInt(dataToSave[field.key], 10);
         }
-        
-        // Converte data brasileira para ISO se for campo de data
-        if (field.key === 'date' && dataToSave[field.key]) {
-          const dateValue = dataToSave[field.key].trim();
-          // Verifica se é uma data no formato brasileiro DD/MM/YYYY
-          const brDatePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-          const match = dateValue.match(brDatePattern);
-          
-          if (match) {
-            const [, day, month, year] = match;
-            // Converte para formato ISO (YYYY-MM-DD) para compatibilidade
-            dataToSave[field.key] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-          }
-          // Se não for formato brasileiro, mantém o valor original (pode ser texto livre como "Era Antiga")
-        }
       });
 
       dataToSave.updatedAt = new Date().toISOString();
@@ -289,15 +278,13 @@ export default function UniversalFormScreen({ route, navigation }: any) {
 
   return (
     <KeyboardAvoidingView 
-      // CORREÇÃO TECLADO: 'padding' funciona melhor no iOS, 'height' ou undefined no Android dependendo do manifesto
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={{ flex: 1 }}
-      keyboardVerticalOffset={headerHeight + 20} // Offset extra
+      keyboardVerticalOffset={headerHeight + 50}
     >
       <ScrollView 
         style={[styles.container, { backgroundColor: colors.background }]}
-        // CORREÇÃO TECLADO: Padding gigante no final para permitir rolagem total
-        contentContainerStyle={{ paddingBottom: 300 }} 
+        contentContainerStyle={{ paddingBottom: 100 }} 
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
@@ -346,7 +333,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                 {field.label} {field.required && '*'}
               </Text>
 
-              {/* RENDERIZAÇÃO DE SELECT (BOTÕES) */}
               {field.type === 'select' ? (
                 <View style={styles.selectContainer}>
                   {field.options.map((option: any) => {
@@ -374,7 +360,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                   })}
                 </View>
               ) : field.type === 'list' ? (
-                // RENDERIZAÇÃO DE LISTA
                 <View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                     <TextInput
@@ -414,7 +399,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                   )}
                 </View>
               ) : (
-                // RENDERIZAÇÃO PADRÃO
                 <TextInput
                   style={[
                     styles.input, 
@@ -437,16 +421,27 @@ export default function UniversalFormScreen({ route, navigation }: any) {
             </View>
           ))}
 
-          <View style={styles.footer}>
+        </View>
+      </ScrollView>
+      
+      <View style={[styles.footer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+        <View style={styles.footerButtons}>
+          <TouchableOpacity
+            style={[styles.cancelButton, { borderColor: colors.border }]}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancelar</Text>
+          </TouchableOpacity>
+          <View style={styles.saveButton}>
             <Button 
-              title={editData ? "Salvar Alterações" : "Criar"} 
+              title={editData ? "Salvar" : "Criar"} 
               onPress={handleSave} 
               loading={loading}
-              fullWidth 
+              fullWidth
             />
           </View>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -492,12 +487,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
   },
-  // Select Styles
-  selectContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
+  selectContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
   selectButton: {
     flex: 1,
     paddingVertical: 12,
@@ -506,10 +496,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  selectText: {
-    fontWeight: '600',
-    fontSize: 14,
-  },
+  selectText: { fontWeight: '600', fontSize: 14 },
   addButton: {
     width: 50,
     height: 50,
@@ -530,5 +517,33 @@ const styles = StyleSheet.create({
   },
   listText: { flex: 1, fontSize: 14, marginRight: 10 },
   removeButton: { padding: 4 },
-  footer: { marginTop: Spacing.lg },
+  footer: { 
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderTopWidth: 1,
+    ...Shadows.md,
+  },
+  footerButtons: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 1,
+  },
 });
