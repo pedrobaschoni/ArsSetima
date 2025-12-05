@@ -2,12 +2,10 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../utils/ThemeContext';
 import { Colors } from '../utils/theme';
 
-// Importar screens (serão criadas depois)
 import HomeScreen from '../screens/HomeScreen';
 import EncyclopediaScreen from '../screens/EncyclopediaScreen';
 import CharacterScreen from '../screens/CharacterScreen';
@@ -22,19 +20,16 @@ import SpellScreen from '../screens/SpellScreen';
 import ItemScreen from '../screens/ItemScreen';
 import CreatureScreen from '../screens/CreatureScreen';
 import FactionScreen from '../screens/FactionScreen';
+import UniversalFormScreen from '../screens/UniversalFormScreen';
+import EntityDetailScreen from '../screens/EntityDetailScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-const Drawer = createDrawerNavigator();
 
-/**
- * Navigator de Personagens
- */
 const CharacterStack = () => {
   const { colors } = useTheme();
   
   return (
-    // @ts-ignore
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
@@ -56,14 +51,10 @@ const CharacterStack = () => {
   );
 };
 
-/**
- * Navigator de Locais
- */
 const LocationStack = () => {
   const { colors } = useTheme();
   
   return (
-    // @ts-ignore
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
@@ -85,70 +76,59 @@ const LocationStack = () => {
   );
 };
 
-/**
- * Navigator de Enciclopédia (Drawer para categorias)
- */
-const EncyclopediaDrawer = () => {
+const EncyclopediaStack = () => {
   const { colors } = useTheme();
   
   return (
-    // @ts-ignore
-    <Drawer.Navigator
+    <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
-        drawerStyle: { backgroundColor: colors.surface },
-        drawerActiveTintColor: Colors.primary,
-        drawerInactiveTintColor: colors.textSecondary,
       }}
     >
-      <Drawer.Screen
+      <Stack.Screen
         name="EncyclopediaHome"
         component={EncyclopediaScreen}
         options={{ title: 'Enciclopédia' }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Characters"
         component={CharacterStack}
-        options={{ title: 'Personagens' }}
+        options={{ title: 'Personagens', headerShown: false }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Locations"
         component={LocationStack}
-        options={{ title: 'Locais' }}
+        options={{ title: 'Locais', headerShown: false }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Spells"
         component={SpellScreen}
         options={{ title: 'Magias' }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Items"
         component={ItemScreen}
         options={{ title: 'Itens' }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Creatures"
         component={CreatureScreen}
         options={{ title: 'Criaturas' }}
       />
-      <Drawer.Screen
+      <Stack.Screen
         name="Factions"
         component={FactionScreen}
         options={{ title: 'Facções' }}
       />
-    </Drawer.Navigator>
+    </Stack.Navigator>
   );
 };
 
-/**
- * Bottom Tab Navigator (navegação principal)
- */
 const MainTabs = () => {
   const { colors } = useTheme();
   
   return (
-    // @ts-ignore
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -158,7 +138,7 @@ const MainTabs = () => {
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Encyclopedia':
+            case 'EncyclopediaTab':
               iconName = focused ? 'book' : 'book-outline';
               break;
             case 'Timeline':
@@ -187,11 +167,14 @@ const MainTabs = () => {
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: 'Início' }}
+        options={{ 
+          title: 'Início',
+          headerShown: false
+        }}
       />
       <Tab.Screen
-        name="Encyclopedia"
-        component={EncyclopediaDrawer}
+        name="EncyclopediaTab"
+        component={EncyclopediaStack}
         options={{ title: 'Enciclopédia', headerShown: false }}
       />
       <Tab.Screen
@@ -213,14 +196,10 @@ const MainTabs = () => {
   );
 };
 
-/**
- * Root Navigator
- */
 const RootStack = () => {
   const { colors } = useTheme();
   
   return (
-    // @ts-ignore
     <Stack.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
@@ -233,22 +212,28 @@ const RootStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="EntityDetail"
+        component={EntityDetailScreen}
+        options={{ title: 'Detalhes' }}
+      />
+      <Stack.Screen
+        name="EntityForm"
+        component={UniversalFormScreen}
+        options={{ title: 'Editor' }}
+      />
+      <Stack.Screen
         name="Settings"
         component={SettingsScreen}
         options={{ title: 'Configurações' }}
       />
-    </Stack.Navigator>
+    </Stack.Navigator> 
   );
 };
 
-/**
- * Navigation Container principal
- */
 export default function Navigation() {
   const { colors, theme } = useTheme();
   
   return (
-    // @ts-ignore
     <NavigationContainer
       theme={{
         dark: theme === 'dark',

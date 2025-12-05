@@ -17,19 +17,18 @@ interface EntityCardProps {
   imageUri?: string;
   icon?: keyof typeof Ionicons.glyphMap;
   tags?: string[];
+  accentColor?: string; // Nova prop para cor personalizada
   onPress?: () => void;
   onLongPress?: () => void;
 }
 
-/**
- * Card genérico para entidades (locais, itens, magias, etc)
- */
 export const EntityCard: React.FC<EntityCardProps> = ({
   title,
   description,
   imageUri,
   icon = 'document-text',
   tags,
+  accentColor = Colors.primary, // Cor padrão se não for passada
   onPress,
   onLongPress,
 }) => {
@@ -37,122 +36,154 @@ export const EntityCard: React.FC<EntityCardProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.surface }]}
+      style={[
+        styles.card, 
+        { 
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderLeftColor: accentColor, // Borda lateral colorida
+        }
+      ]}
       onPress={onPress}
       onLongPress={onLongPress}
-      activeOpacity={0.7}
+      activeOpacity={0.9}
     >
-      {/* Imagem ou ícone */}
-      <View style={styles.mediaContainer}>
-        {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} />
-        ) : (
-          <View style={[styles.iconPlaceholder, { backgroundColor: Colors.primary }]}>
-            <Ionicons name={icon} size={28} color="#fff" />
+      <View style={styles.container}>
+        {/* Ícone ou Imagem */}
+        <View style={styles.mediaContainer}>
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.image} />
+          ) : (
+            <View style={[styles.iconBox, { backgroundColor: accentColor + '15' }]}>
+              <Ionicons name={icon} size={26} color={accentColor} />
+            </View>
+          )}
+        </View>
+
+        {/* Conteúdo de Texto */}
+        <View style={styles.contentContainer}>
+          <View style={styles.headerRow}>
+            <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+              {title}
+            </Text>
+            {/* Seta discreta */}
+            <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} style={{ opacity: 0.5 }} />
           </View>
-        )}
+          
+          {description ? (
+            <Text 
+              style={[styles.description, { color: colors.textSecondary }]}
+              numberOfLines={2}
+            >
+              {description}
+            </Text>
+          ) : null}
+
+          {/* Tags Coloridas */}
+          {tags && tags.length > 0 && (
+            <View style={styles.tagsRow}>
+              {tags.slice(0, 3).map((tag, index) => (
+                <View 
+                  key={`tag-${index}`}
+                  style={[styles.tagBadge, { backgroundColor: accentColor + '10', borderColor: accentColor + '30' }]}
+                >
+                  <Text style={[styles.tagText, { color: accentColor }]}>
+                    {truncateText(tag, 15)}
+                  </Text>
+                </View>
+              ))}
+              {tags.length > 3 && (
+                <Text style={[styles.moreTags, { color: colors.textSecondary }]}>
+                  +{tags.length - 3}
+                </Text>
+              )}
+            </View>
+          )}
+        </View>
       </View>
-
-      {/* Informações */}
-      <View style={styles.infoContainer}>
-        <Text style={[styles.title, { color: colors.text }]}>
-          {title}
-        </Text>
-        
-        {description && (
-          <Text
-            style={[styles.description, { color: colors.textSecondary }]}
-            numberOfLines={2}
-          >
-            {description}
-          </Text>
-        )}
-
-        {/* Tags */}
-        {tags && tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {tags.slice(0, 3).map((tag, index) => (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{truncateText(tag, 15)}</Text>
-              </View>
-            ))}
-            {tags.length > 3 && (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>+{tags.length - 3}</Text>
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-
-      {/* Seta */}
-      <Ionicons
-        name="chevron-forward"
-        size={24}
-        color={colors.textSecondary}
-        style={styles.chevron}
-      />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
+    marginHorizontal: Spacing.md,
+    marginVertical: 6,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderLeftWidth: 4, // Barra de destaque lateral
+    ...Shadows.sm,
+    // Sombra mais suave e moderna
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  container: {
     flexDirection: 'row',
     padding: Spacing.md,
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.sm,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    ...Shadows.md,
+    alignItems: 'flex-start', // Alinha ao topo para suportar descrições longas
   },
   mediaContainer: {
     marginRight: Spacing.md,
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: BorderRadius.md,
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#eee',
   },
-  iconPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: BorderRadius.md,
+  iconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 14, // Squircle
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoContainer: {
+  contentContainer: {
     flex: 1,
+    justifyContent: 'center',
+    minHeight: 50, // Garante altura mínima alinhada com o ícone
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 4,
   },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 4,
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    flex: 1,
+    marginRight: 8,
+    letterSpacing: 0.2,
   },
-  tagsContainer: {
+  description: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: Spacing.sm,
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
   },
-  tag: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.sm,
-    marginRight: Spacing.xs,
-    marginBottom: Spacing.xs,
+  tagBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   tagText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
-  chevron: {
-    marginLeft: Spacing.sm,
+  moreTags: {
+    fontSize: 11,
+    marginLeft: 2,
   },
 });

@@ -3,6 +3,28 @@
  */
 
 /**
+ * Tenta fazer o parse de uma lista que pode estar como string (JSON ou CSV)
+ * Corrige erro de arrays salvos como texto no SQLite
+ */
+export const parseList = (value: any): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  
+  if (typeof value === 'string') {
+    // Tenta JSON primeiro (ex: '["Fogo", "Gelo"]')
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      // Se falhar JSON, assume que é separado por vírgula (ex: "Fogo, Gelo")
+      return value.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    }
+  }
+  
+  return [];
+};
+
+/**
  * Gera um ID único
  */
 export const generateId = (prefix: string = ''): string => {

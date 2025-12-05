@@ -3,17 +3,15 @@
  * Inspiração: Londres fantástica com elementos de magia
  */
 export const Colors = {
-  // Paleta principal
-  primary: '#6B21A8', // Roxo profundo (magia)
-  secondary: '#9F7AEA', // Lavanda (brilho)
-  accent: '#F59E0B', // Dourado suave (CTA)
+  primary: '#6B21A8',
+  secondary: '#9F7AEA',
+  accent: '#F59E0B',
 
-  // Tema escuro
   dark: {
-    background: '#0B0F1A', // Fundo escuro
-    surface: '#1a1f2e', // Superfícies (cards)
+    background: '#0B0F1A',
+    surface: '#1a1f2e',
     surfaceVariant: '#252b3d',
-    text: '#E6E7EA', // Texto principal
+    text: '#E6E7EA',
     textSecondary: '#9ca3af',
     border: '#374151',
     error: '#ef4444',
@@ -21,7 +19,6 @@ export const Colors = {
     warning: '#f59e0b',
   },
 
-  // Tema claro
   light: {
     background: '#F9FAFB',
     surface: '#FFFFFF',
@@ -35,9 +32,6 @@ export const Colors = {
   },
 };
 
-/**
- * Tipografia
- */
 export const Typography = {
   fontSizes: {
     xs: 12,
@@ -61,9 +55,6 @@ export const Typography = {
   },
 };
 
-/**
- * Espaçamentos
- */
 export const Spacing = {
   xs: 4,
   sm: 8,
@@ -73,9 +64,6 @@ export const Spacing = {
   xxl: 48,
 };
 
-/**
- * Border radius
- */
 export const BorderRadius = {
   sm: 4,
   md: 8,
@@ -84,9 +72,6 @@ export const BorderRadius = {
   full: 9999,
 };
 
-/**
- * Sombras
- */
 export const Shadows = {
   sm: {
     shadowColor: '#000',

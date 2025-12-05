@@ -1,13 +1,60 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, Image } from 'react-native';
+import React, { useState, useCallback, useLayoutEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Button } from '../components/Button';
 import { useTheme } from '../utils/ThemeContext';
-import { Spacing, BorderRadius } from '../utils/theme';
+import { Spacing, Colors } from '../utils/theme';
 import { pdfService } from '../services/pdfService';
+import { databaseService } from '../database/migrations';
+import { parseList } from '../utils/helpers';
 
-export default function CharacterDetailScreen({ route }: any) {
+export default function CharacterDetailScreen({ route, navigation }: any) {
   const { colors } = useTheme();
-  const { character } = route.params;
+  const { character: initialCharacter } = route.params;
+  
+  const [character, setCharacter] = useState(initialCharacter);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('EntityForm', { 
+            entityType: 'character', 
+            editData: character 
+          })} 
+          style={{ marginRight: 15 }}
+        >
+          <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 16 }}>Editar</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, character]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadFreshData = async () => {
+        const freshData = await databaseService.getById<any>('characters', initialCharacter.id);
+        if (freshData) {
+          // Tenta parsear 'notes' se for uma string JSON de array
+          let parsedNotes = freshData.notes;
+          try {
+             const json = JSON.parse(freshData.notes);
+             if (Array.isArray(json)) parsedNotes = json;
+          } catch {}
+
+          const formatted = {
+            ...freshData,
+            powers: parseList(freshData.powers),
+            tags: parseList(freshData.tags),
+            relations: parseList(freshData.relations),
+            notes: parsedNotes, // Usa a versão processada
+          };
+          setCharacter(formatted);
+        }
+      };
+      loadFreshData();
+    }, [initialCharacter.id])
+  );
 
   const handleExportPDF = async () => {
     try {
@@ -44,11 +91,38 @@ export default function CharacterDetailScreen({ route }: any) {
         {character.powers && character.powers.length > 0 && (
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Poderes</Text>
-            {character.powers.map((power, index) => (
-              <Text style={[styles.sectionText, { color: colors.textSecondary }]}>
+            {character.powers.map((power: string, index: number) => (
+              <Text key={index} style={[styles.sectionText, { color: colors.textSecondary }]}>
                 • {power}
               </Text>
             ))}
+          </View>
+        )}
+
+        {character.goals && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Objetivos</Text>
+            <Text style={[styles.sectionText, { color: colors.textSecondary }]}>
+              {character.goals}
+            </Text>
+          </View>
+        )}
+
+        {/* EXIBIÇÃO DE NOTAS (Lista ou Texto) */}
+        {character.notes && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Notas</Text>
+            {Array.isArray(character.notes) ? (
+              character.notes.map((note: string, index: number) => (
+                <View key={index} style={{ marginBottom: 8, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: Colors.primary }}>
+                  <Text style={[styles.sectionText, { color: colors.textSecondary }]}>{note}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={[styles.sectionText, { color: colors.textSecondary }]}>
+                {character.notes}
+              </Text>
+            )}
           </View>
         )}
 
@@ -64,35 +138,12 @@ export default function CharacterDetailScreen({ route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  image: {
-    width: '100%',
-    height: 250,
-  },
-  content: {
-    padding: Spacing.lg,
-  },
-  name: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: Spacing.sm,
-  },
-  info: {
-    fontSize: 16,
-    marginBottom: Spacing.md,
-  },
-  section: {
-    marginBottom: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  sectionText: {
-    fontSize: 16,
-    lineHeight: 24,
-  },
+  container: { flex: 1 },
+  image: { width: '100%', height: 250 },
+  content: { padding: Spacing.lg },
+  name: { fontSize: 28, fontWeight: 'bold', marginBottom: Spacing.sm },
+  info: { fontSize: 16, marginBottom: Spacing.md },
+  section: { marginBottom: Spacing.lg },
+  sectionTitle: { fontSize: 20, fontWeight: '600', marginBottom: Spacing.sm },
+  sectionText: { fontSize: 16, lineHeight: 24 },
 });

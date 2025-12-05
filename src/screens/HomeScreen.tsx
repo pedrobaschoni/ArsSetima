@@ -1,30 +1,148 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  StatusBar,
+  Dimensions,
+  Pressable,
+  TextInput,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../utils/ThemeContext';
 import { Colors, Spacing, BorderRadius, Shadows } from '../utils/theme';
 import { databaseService } from '../database/migrations';
+import { useFocusEffect } from '@react-navigation/native';
+
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = (width - Spacing.xl * 2 - Spacing.md) / 2;
+
+// --- Componentes ---
+
+const ModernHeader = ({
+  title,
+  subtitle,
+  onSettingsPress,
+  colors,
+  searchQuery,
+  setSearchQuery,
+}: {
+  title: string;
+  subtitle: string;
+  onSettingsPress: () => void;
+  colors: any;
+  searchQuery: string;
+  setSearchQuery: (text: string) => void;
+}) => (
+  <View style={[styles.header, { backgroundColor: colors.surface }]}>
+    <View style={styles.headerTopRow}>
+      <View>
+        <Text style={[styles.appName, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.greeting, { color: colors.textSecondary }]}>{subtitle}</Text>
+      </View>
+      <TouchableOpacity
+        style={[styles.settingsButton, { backgroundColor: colors.surfaceVariant }]}
+        onPress={onSettingsPress}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="settings-outline" size={24} color={colors.text} />
+      </TouchableOpacity>
+    </View>
+
+    <View style={[styles.searchContainer, { backgroundColor: colors.background }]}>
+      <Ionicons
+        name="search"
+        size={20}
+        color={colors.textSecondary}
+        style={{ marginLeft: 10 }}
+      />
+      <TextInput
+        placeholder="Buscar no universo..."
+        placeholderTextColor={colors.textSecondary}
+        style={[styles.searchInput, { color: colors.text }]}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+      {searchQuery.length > 0 && (
+        <TouchableOpacity onPress={() => setSearchQuery('')}>
+          <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+        </TouchableOpacity>
+      )}
+    </View>
+  </View>
+);
+
+const StatCard = ({ title, count, icon, onPress, color, colors }: any) => {
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          opacity: pressed ? 0.9 : 1,
+          transform: [{ scale: pressed ? 0.98 : 1 }],
+        },
+      ]}
+      onPress={onPress}
+    >
+      <View style={styles.cardHeader}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: color + '15' }]}
+        >
+          <Ionicons name={icon} size={24} color={color} />
+        </View>
+        <Ionicons
+          name="arrow-forward"
+          size={16}
+          color={colors.textSecondary}
+          style={{ opacity: 0.5 }}
+        />
+      </View>
+
+      <View style={styles.cardContent}>
+        <Text style={[styles.cardCount, { color: colors.text }]}>
+          {count !== null ? count : '-'}
+        </Text>
+        <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>
+          {title}
+        </Text>
+      </View>
+    </Pressable>
+  );
+};
+
+// --- Tela Principal ---
 
 export default function HomeScreen({ navigation }: any) {
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
   const [stats, setStats] = useState({
     characters: 0,
     locations: 0,
     events: 0,
     notes: 0,
   });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadStats();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadStats();
+    }, [])
+  );
 
   const loadStats = async () => {
     try {
-      const characters = await databaseService.getAll('characters');
-      const locations = await databaseService.getAll('locations');
-      const events = await databaseService.getAll('events');
-      const notes = await databaseService.getAll('notes');
-      
+      const [characters, locations, events, notes] = await Promise.all([
+        databaseService.getAll('characters'),
+        databaseService.getAll('locations'),
+        databaseService.getAll('events'),
+        databaseService.getAll('notes'),
+      ]);
+
       setStats({
         characters: characters.length,
         locations: locations.length,
@@ -36,68 +154,125 @@ export default function HomeScreen({ navigation }: any) {
     }
   };
 
-  const QuickAccessCard = ({ title, count, icon, onPress, color }: any) => (
-    <TouchableOpacity
-      style={[styles.quickCard, { backgroundColor: colors.surface }]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
-        <Ionicons name={icon} size={32} color={color} />
-      </View>
-      <Text style={[styles.cardCount, { color: colors.text }]}>{count}</Text>
-      <Text style={[styles.cardTitle, { color: colors.textSecondary }]}>{title}</Text>
-    </TouchableOpacity>
-  );
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadStats();
+    setRefreshing(false);
+  };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>ArsSétima</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          O Preço do Sétimo Poder
-        </Text>
-      </View>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.surface} 
+      />
 
-      <View style={styles.quickGrid}>
-        <QuickAccessCard
-          title="Personagens"
-          count={stats.characters}
-          icon="people"
-          color={Colors.primary}
-          onPress={() => navigation.navigate('Encyclopedia', { screen: 'Characters' })}
-        />
-        <QuickAccessCard
-          title="Locais"
-          count={stats.locations}
-          icon="location"
-          color={Colors.secondary}
-          onPress={() => navigation.navigate('Encyclopedia', { screen: 'Locations' })}
-        />
-        <QuickAccessCard
-          title="Eventos"
-          count={stats.events}
-          icon="time"
-          color={Colors.accent}
-          onPress={() => navigation.navigate('Timeline')}
-        />
-        <QuickAccessCard
-          title="Notas"
-          count={stats.notes}
-          icon="document-text"
-          color={colors.success}
-          onPress={() => navigation.navigate('Notes')}
-        />
-      </View>
+      <ModernHeader
+        title="ArsSétima"
+        subtitle="O Preço do Sétimo Poder"
+        onSettingsPress={() => navigation.navigate('Settings')}
+        colors={colors}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
-      <TouchableOpacity
-        style={[styles.actionButton, { backgroundColor: Colors.primary }]}
-        onPress={() => navigation.navigate('Settings')}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+          />
+        }
       >
-        <Ionicons name="settings" size={20} color="#fff" />
-        <Text style={styles.actionButtonText}>Configurações</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={styles.sectionLabel}>
+          <Text style={[styles.sectionText, { color: colors.textSecondary }]}>
+            DASHBOARD
+          </Text>
+        </View>
+
+        <View style={styles.grid}>
+          <StatCard
+            title="Personagens"
+            count={stats.characters}
+            icon="people"
+            color={Colors.primary}
+            colors={colors}
+            // CORREÇÃO AQUI: Mudado de 'Encyclopedia' para 'EncyclopediaTab'
+            onPress={() =>
+              navigation.navigate('EncyclopediaTab', { screen: 'Characters' })
+            }
+          />
+          <StatCard
+            title="Locais"
+            count={stats.locations}
+            icon="map"
+            color={Colors.secondary}
+            colors={colors}
+            // CORREÇÃO AQUI: Mudado de 'Encyclopedia' para 'EncyclopediaTab'
+            onPress={() =>
+              navigation.navigate('EncyclopediaTab', { screen: 'Locations' })
+            }
+          />
+          <StatCard
+            title="Linha do Tempo"
+            count={stats.events}
+            icon="hourglass"
+            color={Colors.accent}
+            colors={colors}
+            onPress={() => navigation.navigate('Timeline')}
+          />
+          <StatCard
+            title="Notas Rápidas"
+            count={stats.notes}
+            icon="document-text"
+            color="#10b981"
+            colors={colors}
+            onPress={() => navigation.navigate('Notes')}
+          />
+        </View>
+
+        <View style={styles.marginTop}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBanner,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              },
+            ]}
+            onPress={() => navigation.navigate('Writing')}
+          >
+            <View
+              style={[
+                styles.actionIconParams,
+                { backgroundColor: Colors.primary + '15' },
+              ]}
+            >
+              <Ionicons name="create" size={28} color={Colors.primary} />
+            </View>
+            <View style={styles.actionTextContainer}>
+              <Text style={[styles.actionTitle, { color: colors.text }]}>
+                Continuar Escrevendo
+              </Text>
+              <Text
+                style={[styles.actionSubtitle, { color: colors.textSecondary }]}
+              >
+                Acesse o editor de capítulos
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -106,59 +281,138 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: Spacing.xl,
+    paddingTop: StatusBar.currentHeight ? StatusBar.currentHeight + 20 : 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+    zIndex: 1,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 32,
+  appName: {
+    fontSize: 28,
     fontWeight: 'bold',
+    letterSpacing: 0.5,
   },
-  subtitle: {
+  greeting: {
+    fontSize: 14,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  settingsButton: {
+    padding: 8,
+    borderRadius: 12,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    borderRadius: 16,
+    alignItems: 'center',
+    height: 50,
+    paddingHorizontal: 12,
+  },
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    marginLeft: 10,
     fontSize: 16,
-    marginTop: Spacing.sm,
   },
-  quickGrid: {
+  scrollContent: {
+    padding: Spacing.xl,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+  },
+  sectionLabel: {
+    marginBottom: Spacing.md,
+    marginTop: Spacing.xs,
+  },
+  sectionText: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: Spacing.md,
+    gap: Spacing.md,
     justifyContent: 'space-between',
   },
-  quickCard: {
-    width: '48%',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.md,
-    alignItems: 'center',
-    ...Shadows.md,
+  card: {
+    width: CARD_WIDTH,
+    height: 150,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.md,
+    borderWidth: 1,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: BorderRadius.xl,
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.md,
+  },
+  cardContent: {
+    marginTop: Spacing.sm,
   },
   cardCount: {
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: -1,
   },
   cardTitle: {
-    fontSize: 14,
-    marginTop: Spacing.xs,
+    fontSize: 15,
+    fontWeight: '500',
+    marginTop: 2,
   },
-  actionButton: {
+  marginTop: {
+    marginTop: Spacing.lg,
+  },
+  actionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    margin: Spacing.md,
     padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    ...Shadows.sm,
   },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: Spacing.sm,
+  actionIconParams: {
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.full,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  actionTextContainer: {
+    flex: 1,
+  },
+  actionTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  actionSubtitle: {
+    fontSize: 14,
   },
 });

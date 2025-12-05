@@ -165,8 +165,7 @@ class DatabaseService {
     ];
 
     for (const sql of tables) {
-      // Nova API: execAsync aceita statements SQL diretamente
-      await this.db!.execAsync(sql);
+      await this.db.execAsync(sql);
     }
   }
 
@@ -198,11 +197,16 @@ class DatabaseService {
   }
 
   /**
-   * Insere um registro em uma tabela
+   * Insere um registro em uma tabela (Corrigido para tratar Arrays/Objetos)
    */
   async insert(table: string, data: Record<string, any>): Promise<void> {
     const keys = Object.keys(data);
-    const values = Object.values(data);
+    
+    // CORREÇÃO: Transforma arrays e objetos em string JSON antes de salvar
+    const values = Object.values(data).map(v => 
+      Array.isArray(v) || (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v
+    );
+    
     const placeholders = keys.map(() => '?').join(', ');
     
     const sql = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`;
@@ -210,7 +214,7 @@ class DatabaseService {
   }
 
   /**
-   * Atualiza um registro em uma tabela
+   * Atualiza um registro em uma tabela (Corrigido para tratar Arrays/Objetos)
    */
   async update(
     table: string,
@@ -218,7 +222,12 @@ class DatabaseService {
     data: Record<string, any>
   ): Promise<void> {
     const keys = Object.keys(data);
-    const values = Object.values(data);
+    
+    // CORREÇÃO: Transforma arrays e objetos em string JSON antes de salvar
+    const values = Object.values(data).map(v => 
+      Array.isArray(v) || (typeof v === 'object' && v !== null) ? JSON.stringify(v) : v
+    );
+    
     const setClause = keys.map(key => `${key} = ?`).join(', ');
     
     const sql = `UPDATE ${table} SET ${setClause} WHERE id = ?`;
