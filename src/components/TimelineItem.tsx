@@ -28,11 +28,11 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   const getImportanceColor = () => {
     switch (event.importance) {
       case 'high':
-        return '#ef4444';
+        return '#ef4444'; // Vermelho
       case 'medium':
-        return Colors.accent;
+        return Colors.accent; // Âmbar/Laranja
       case 'low':
-        return colors.textSecondary;
+        return '#10b981'; // Verde
       default:
         return Colors.secondary;
     }

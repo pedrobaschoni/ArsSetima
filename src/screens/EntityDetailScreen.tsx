@@ -22,12 +22,15 @@ import { parseList } from '../utils/helpers';
 
 const { width } = Dimensions.get('window');
 
+// Configuração de Cores e Ícones
 const ENTITY_THEME: any = {
   spell: { color: '#ef4444', icon: 'flame', label: 'Magia' },
   item: { color: '#3b82f6', icon: 'cube', label: 'Item' },
   creature: { color: '#10b981', icon: 'paw', label: 'Criatura' },
   faction: { color: '#f59e0b', icon: 'flag', label: 'Facção' },
   location: { color: Colors.secondary, icon: 'location', label: 'Local' },
+  // ADICIONADO: Tema para Eventos
+  event: { color: Colors.accent, icon: 'time', label: 'Evento' },
 };
 
 const VIEW_CONFIG: any = {
@@ -71,6 +74,18 @@ const VIEW_CONFIG: any = {
     sections: [
       { key: 'goals', label: 'Objetivos', icon: 'telescope' },
     ]
+  },
+  // ADICIONADO: Configuração para Eventos
+  event: {
+    table: 'events',
+    stats: [
+      { key: 'date', label: 'Data', icon: 'calendar' },
+      { key: 'importance', label: 'Importância', icon: 'alert-circle' },
+    ],
+    sections: [
+      { key: 'category', label: 'Categoria', icon: 'pricetag' },
+      { key: 'description', label: 'Descrição', icon: 'document-text' },
+    ]
   }
 };
 
@@ -90,14 +105,32 @@ export default function EntityDetailScreen({ route, navigation }: any) {
   }
 
   const config = VIEW_CONFIG[entityType];
-  const theme = ENTITY_THEME[entityType] || { color: Colors.primary, icon: 'document' };
+  let initialTheme = ENTITY_THEME[entityType] || { color: Colors.primary, icon: 'document' };
+  
+  // Se for evento, ajusta a cor baseado na importância
+  if (entityType === 'event' && initialData.importance) {
+    switch (initialData.importance) {
+      case 'high':
+        initialTheme = { ...initialTheme, color: '#ef4444' }; // Vermelho
+        break;
+      case 'medium':
+        initialTheme = { ...initialTheme, color: '#f59e0b' }; // Laranja/Âmbar
+        break;
+      case 'low':
+        initialTheme = { ...initialTheme, color: '#10b981' }; // Verde
+        break;
+    }
+  }
+  
   const [data, setData] = useState(initialData);
+  const [theme, setTheme] = useState(initialTheme);
   const [loading, setLoading] = useState(false);
 
+  // --- LÓGICA DE EXCLUSÃO ---
   const handleDelete = async () => {
     Alert.alert(
       'Excluir Item',
-      `Tem certeza que deseja excluir "${data.name}"?`,
+      `Tem certeza que deseja excluir "${data.name || data.title}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -155,6 +188,23 @@ export default function EntityDetailScreen({ route, navigation }: any) {
              if (freshData[key]) formatted[key] = parseList(freshData[key]);
           });
           setData(formatted);
+          
+          // Atualiza o tema se for evento
+          if (entityType === 'event' && freshData.importance) {
+            let newTheme = ENTITY_THEME[entityType];
+            switch (freshData.importance) {
+              case 'high':
+                newTheme = { ...newTheme, color: '#ef4444' }; // Vermelho
+                break;
+              case 'medium':
+                newTheme = { ...newTheme, color: '#f59e0b' }; // Laranja/Âmbar
+                break;
+              case 'low':
+                newTheme = { ...newTheme, color: '#10b981' }; // Verde
+                break;
+            }
+            setTheme(newTheme);
+          }
         }
       };
       loadFreshData();
@@ -162,9 +212,9 @@ export default function EntityDetailScreen({ route, navigation }: any) {
   );
 
   const handleExportPDF = async () => {
-    let content = `<h1>${data.name}</h1><hr/>`;
+    let content = `<h1>${data.name || data.title}</h1><hr/>`;
     content += `<p><strong>Descrição:</strong> ${data.description}</p>`;
-    await pdfService.generateCustomPDF(data.name, content, `${data.name}.pdf`);
+    await pdfService.generateCustomPDF(data.name || data.title, content, `${data.name || data.title}.pdf`);
   };
 
   const StatBadge = ({ icon, label, value }: any) => {
@@ -210,12 +260,13 @@ export default function EntityDetailScreen({ route, navigation }: any) {
             <View style={[styles.iconBubble, { backgroundColor: theme.color }]}>
               <Ionicons name={theme.icon} size={32} color="#fff" />
             </View>
-            <Text style={[styles.title, { color: colors.text }]}>{data.name}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>{data.name || data.title}</Text>
             <Text style={[styles.subtitle, { color: theme.color }]}>{theme.label}</Text>
           </View>
         </View>
 
         <View style={styles.content}>
+          
           {config?.stats && (
             <View style={styles.statsGrid}>
               {config.stats.map((stat: any) => (
@@ -231,7 +282,10 @@ export default function EntityDetailScreen({ route, navigation }: any) {
 
           {data.description && (
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Sobre</Text>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="document-text" size={20} color={theme.color} style={{ marginRight: 8 }} />
+                <Text style={[styles.sectionTitle, { color: colors.text, marginBottom: 0 }]}>Descrição</Text>
+              </View>
               <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>
                 {data.description}
               </Text>
@@ -241,6 +295,7 @@ export default function EntityDetailScreen({ route, navigation }: any) {
           {config?.sections.map((section: any) => {
             const value = data[section.key];
             if (!value || (Array.isArray(value) && value.length === 0)) return null;
+            if (section.key === 'description') return null; // Já exibido acima
 
             return (
               <View key={section.key} style={styles.section}>
@@ -401,6 +456,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
+    marginBottom: 0,
   },
   descriptionText: {
     fontSize: 16,

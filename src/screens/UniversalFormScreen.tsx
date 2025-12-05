@@ -93,6 +93,28 @@ const ENTITY_CONFIG: any = {
       { key: 'alignment', label: 'Alinhamento', type: 'text' },
     ],
   },
+  event: {
+    label: 'Evento',
+    table: 'events',
+    hasImage: false,
+    fields: [
+      { key: 'title', label: 'Título do Evento', type: 'text', required: true },
+      { key: 'date', label: 'Data (Ex: 10/10/2025 ou "Era Antiga")', type: 'text', required: true },
+      { key: 'description', label: 'Descrição do Evento', type: 'multiline', required: true },
+      { key: 'category', label: 'Categoria', type: 'text' },
+      // MUDANÇA: Tipo 'select' com opções fixas
+      { 
+        key: 'importance', 
+        label: 'Importância', 
+        type: 'select',
+        options: [
+          { label: 'Baixa', value: 'low', color: '#10b981' },
+          { label: 'Média', value: 'medium', color: '#f59e0b' },
+          { label: 'Alta', value: 'high', color: '#ef4444' }
+        ]
+      },
+    ],
+  },
   note: {
     label: 'Nota',
     table: 'notes',
@@ -146,6 +168,21 @@ export default function UniversalFormScreen({ route, navigation }: any) {
           }
         }
         
+        // Converte data ISO para formato brasileiro ao editar
+        if (field.key === 'date' && preparedData[field.key]) {
+          const dateValue = preparedData[field.key];
+          // Verifica se é formato ISO (YYYY-MM-DD)
+          const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+          const match = dateValue.match(isoDatePattern);
+          
+          if (match) {
+            const [, year, month, day] = match;
+            // Converte para formato brasileiro (DD/MM/YYYY)
+            preparedData[field.key] = `${day}/${month}/${year}`;
+          }
+          // Se não for ISO, mantém o valor original
+        }
+        
         if (typeof preparedData[field.key] === 'number') {
           preparedData[field.key] = preparedData[field.key].toString();
         }
@@ -156,6 +193,10 @@ export default function UniversalFormScreen({ route, navigation }: any) {
       const initialData: any = {};
       config.fields.forEach((field: any) => {
         if (field.type === 'list') initialData[field.key] = [];
+        // Define valor padrão para select se necessário (opcional)
+        if (field.type === 'select' && field.options.length > 0) {
+           initialData[field.key] = field.options[1].value; // Default: Média
+        }
       });
       setFormData(initialData);
       navigation.setOptions({ title: `Novo ${config.label}` });
@@ -196,7 +237,7 @@ export default function UniversalFormScreen({ route, navigation }: any) {
 
   const handleSave = async () => {
     for (const field of config.fields) {
-      if (field.required && (!formData[field.key] || formData[field.key].length === 0)) {
+      if (field.required && (!formData[field.key] || (Array.isArray(formData[field.key]) && formData[field.key].length === 0))) {
         Alert.alert('Erro', `O campo ${field.label} é obrigatório.`);
         return;
       }
@@ -209,6 +250,21 @@ export default function UniversalFormScreen({ route, navigation }: any) {
       config.fields.forEach((field: any) => {
         if (field.type === 'number' && dataToSave[field.key]) {
           dataToSave[field.key] = parseInt(dataToSave[field.key], 10);
+        }
+        
+        // Converte data brasileira para ISO se for campo de data
+        if (field.key === 'date' && dataToSave[field.key]) {
+          const dateValue = dataToSave[field.key].trim();
+          // Verifica se é uma data no formato brasileiro DD/MM/YYYY
+          const brDatePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+          const match = dateValue.match(brDatePattern);
+          
+          if (match) {
+            const [, day, month, year] = match;
+            // Converte para formato ISO (YYYY-MM-DD) para compatibilidade
+            dataToSave[field.key] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          }
+          // Se não for formato brasileiro, mantém o valor original (pode ser texto livre como "Era Antiga")
         }
       });
 
@@ -233,13 +289,15 @@ export default function UniversalFormScreen({ route, navigation }: any) {
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+      // CORREÇÃO TECLADO: 'padding' funciona melhor no iOS, 'height' ou undefined no Android dependendo do manifesto
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={{ flex: 1 }}
-      keyboardVerticalOffset={headerHeight}
+      keyboardVerticalOffset={headerHeight + 20} // Offset extra
     >
       <ScrollView 
         style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={{ paddingBottom: 150 }} 
+        // CORREÇÃO TECLADO: Padding gigante no final para permitir rolagem total
+        contentContainerStyle={{ paddingBottom: 300 }} 
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
@@ -288,7 +346,35 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                 {field.label} {field.required && '*'}
               </Text>
 
-              {field.type === 'list' ? (
+              {/* RENDERIZAÇÃO DE SELECT (BOTÕES) */}
+              {field.type === 'select' ? (
+                <View style={styles.selectContainer}>
+                  {field.options.map((option: any) => {
+                    const isSelected = formData[field.key] === option.value;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.selectButton,
+                          { 
+                            borderColor: isSelected ? (option.color || Colors.primary) : colors.border,
+                            backgroundColor: isSelected ? (option.color || Colors.primary) : colors.surface,
+                          }
+                        ]}
+                        onPress={() => setFormData({ ...formData, [field.key]: option.value })}
+                      >
+                        <Text style={[
+                          styles.selectText,
+                          { color: isSelected ? '#fff' : colors.text }
+                        ]}>
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : field.type === 'list' ? (
+                // RENDERIZAÇÃO DE LISTA
                 <View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                     <TextInput
@@ -328,6 +414,7 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                   )}
                 </View>
               ) : (
+                // RENDERIZAÇÃO PADRÃO
                 <TextInput
                   style={[
                     styles.input, 
@@ -367,10 +454,7 @@ export default function UniversalFormScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   form: { padding: Spacing.lg },
-  imageSection: {
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
+  imageSection: { alignItems: 'center', marginBottom: Spacing.xl },
   imagePicker: {
     width: 150,
     height: 150,
@@ -380,20 +464,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Shadows.md,
   },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  imagePlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imagePlaceholderText: {
-    fontSize: 12,
-    marginTop: 8,
-    fontWeight: '500',
-  },
+  imagePreview: { width: '100%', height: '100%', resizeMode: 'cover' },
+  imagePlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  imagePlaceholderText: { fontSize: 12, marginTop: 8, fontWeight: '500' },
   editBadge: {
     position: 'absolute',
     bottom: 10,
@@ -409,23 +482,33 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  removeImageButton: {
-    marginTop: 8,
-    padding: 4,
-  },
+  removeImageButton: { marginTop: 8, padding: 4 },
   inputGroup: { marginBottom: Spacing.lg },
-  label: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    marginBottom: 8,
-    marginLeft: 4
-  },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginLeft: 4 },
   input: {
     borderWidth: 1,
     borderRadius: BorderRadius.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
+  },
+  // Select Styles
+  selectContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  selectButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectText: {
+    fontWeight: '600',
+    fontSize: 14,
   },
   addButton: {
     width: 50,
@@ -435,9 +518,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 10,
   },
-  listContainer: {
-    marginTop: 4,
-  },
+  listContainer: { marginTop: 4 },
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -447,15 +528,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     marginBottom: 8,
   },
-  listText: {
-    flex: 1,
-    fontSize: 14,
-    marginRight: 10,
-  },
-  removeButton: {
-    padding: 4,
-  },
-  footer: {
-    marginTop: Spacing.lg,
-  }
+  listText: { flex: 1, fontSize: 14, marginRight: 10 },
+  removeButton: { padding: 4 },
+  footer: { marginTop: Spacing.lg },
 });
