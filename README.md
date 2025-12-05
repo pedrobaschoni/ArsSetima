@@ -76,43 +76,65 @@ npm run lint
 
 ```
 ArsSétima/
-├── App.tsx                 # Componente raiz
-├── app.json               # Configuração do Expo
-├── package.json           # Dependências
-├── tsconfig.json          # Configuração TypeScript
-├── assets/                # Imagens e ícones
+├── App.tsx                      # Componente raiz
+├── app.json                     # Configuração do Expo
+├── package.json                 # Dependências
+├── tsconfig.json                # Configuração TypeScript
+├── babel.config.js              # Configuração Babel
+├── INSTALAR.bat                 # Script de instalação rápida
+├── PLAY_STORE_GUIDE.md          # Guia para publicação na Play Store
+├── README.md                    # Este arquivo
+├── assets/                      # Imagens e ícones
+│   ├── create-icons.ps1         # Script para gerar ícones
+│   └── README.md                # Documentação dos assets
 ├── seed/
-│   └── seed-data.json    # Dados iniciais de exemplo
+│   └── seed-data.json           # Dados iniciais de exemplo
 └── src/
-    ├── components/        # Componentes reutilizáveis
-    │   ├── CharacterCard.tsx
-    │   ├── TimelineItem.tsx
-    │   ├── EntityCard.tsx
-    │   ├── Button.tsx
-    │   └── EmptyState.tsx
-    ├── screens/          # Telas do app
-    │   ├── HomeScreen.tsx
-    │   ├── CharacterScreen.tsx
-    │   ├── TimelineScreen.tsx
-    │   ├── NotesScreen.tsx
-    │   ├── WritingScreen.tsx
-    │   └── SettingsScreen.tsx
-    ├── navigation/       # Configuração de navegação
-    │   └── index.tsx
-    ├── services/         # Lógica de negócio
-    │   ├── storageService.ts
-    │   └── pdfService.ts
-    ├── database/         # Camada de dados (SQLite)
-    │   └── migrations.ts
-    ├── types/            # Tipos TypeScript
-    │   ├── character.ts
-    │   ├── location.ts
-    │   ├── event.ts
-    │   └── ...
-    └── utils/            # Utilitários
-        ├── theme.ts
-        ├── ThemeContext.tsx
-        └── helpers.ts
+    ├── components/              # Componentes reutilizáveis
+    │   ├── Button.tsx           # Botão customizado
+    │   ├── CharacterCard.tsx    # Card de personagem
+    │   ├── EmptyState.tsx       # Estado vazio
+    │   ├── EntityCard.tsx       # Card genérico de entidade
+    │   └── TimelineItem.tsx     # Item da linha do tempo
+    ├── screens/                 # Telas do app
+    │   ├── HomeScreen.tsx       # Tela inicial
+    │   ├── EncyclopediaScreen.tsx  # Hub da enciclopédia
+    │   ├── CharacterScreen.tsx  # Lista de personagens
+    │   ├── CharacterDetailScreen.tsx  # Detalhes do personagem
+    │   ├── LocationScreen.tsx   # Lista de locais
+    │   ├── LocationDetailScreen.tsx   # Detalhes do local
+    │   ├── FactionScreen.tsx    # Lista de facções
+    │   ├── SpellScreen.tsx      # Lista de magias
+    │   ├── ItemScreen.tsx       # Lista de itens
+    │   ├── CreatureScreen.tsx   # Lista de criaturas
+    │   ├── EntityDetailScreen.tsx  # Tela genérica de detalhes
+    │   ├── UniversalFormScreen.tsx # Formulário universal para entidades
+    │   ├── TimelineScreen.tsx   # Linha do tempo
+    │   ├── NotesScreen.tsx      # Sistema de notas
+    │   ├── WritingScreen.tsx    # Editor de capítulos
+    │   └── SettingsScreen.tsx   # Configurações
+    ├── navigation/              # Configuração de navegação
+    │   └── index.tsx            # Stack e Tab navigators
+    ├── services/                # Lógica de negócio
+    │   ├── storageService.ts    # Serviço de armazenamento (SQLite)
+    │   └── pdfService.ts        # Geração de PDFs
+    ├── database/                # Camada de dados (SQLite)
+    │   └── migrations.ts        # Migrações do banco de dados
+    ├── types/                   # Tipos TypeScript
+    │   ├── index.ts             # Exports centralizados
+    │   ├── character.ts         # Tipo Personagem
+    │   ├── location.ts          # Tipo Local
+    │   ├── faction.ts           # Tipo Facção
+    │   ├── spell.ts             # Tipo Magia
+    │   ├── item.ts              # Tipo Item
+    │   ├── creature.ts          # Tipo Criatura
+    │   ├── event.ts             # Tipo Evento
+    │   ├── note.ts              # Tipo Nota
+    │   └── chapter.ts           # Tipo Capítulo
+    └── utils/                   # Utilitários
+        ├── theme.ts             # Tema do app
+        ├── ThemeContext.tsx     # Contexto de tema
+        └── helpers.ts           # Funções auxiliares
 ```
 
 ## 📦 Gerando APK para Android
