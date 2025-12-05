@@ -9,12 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Button } from '../components/Button';
 import { useTheme } from '../utils/ThemeContext';
-import { Spacing, BorderRadius, Colors } from '../utils/theme';
+import { Spacing, BorderRadius, Colors, Shadows } from '../utils/theme';
 import { databaseService } from '../database/migrations';
 import { generateId } from '../utils/helpers';
 
@@ -22,6 +24,7 @@ const ENTITY_CONFIG: any = {
   character: {
     label: 'Personagem',
     table: 'characters',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome', type: 'text', required: true },
       { key: 'age', label: 'Idade', type: 'number' },
@@ -35,6 +38,7 @@ const ENTITY_CONFIG: any = {
   location: {
     label: 'Local',
     table: 'locations',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome do Local', type: 'text', required: true },
       { key: 'description', label: 'Descrição', type: 'multiline', required: true },
@@ -44,6 +48,7 @@ const ENTITY_CONFIG: any = {
   spell: {
     label: 'Magia',
     table: 'spells',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome da Magia', type: 'text', required: true },
       { key: 'description', label: 'Descrição/Efeito', type: 'multiline', required: true },
@@ -55,6 +60,7 @@ const ENTITY_CONFIG: any = {
   item: {
     label: 'Item',
     table: 'items',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome do Item', type: 'text', required: true },
       { key: 'description', label: 'Descrição', type: 'multiline', required: true },
@@ -66,6 +72,7 @@ const ENTITY_CONFIG: any = {
   creature: {
     label: 'Criatura',
     table: 'creatures',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome', type: 'text', required: true },
       { key: 'species', label: 'Espécie', type: 'text' },
@@ -78,6 +85,7 @@ const ENTITY_CONFIG: any = {
   faction: {
     label: 'Facção',
     table: 'factions',
+    hasImage: true,
     fields: [
       { key: 'name', label: 'Nome da Facção', type: 'text', required: true },
       { key: 'description', label: 'Descrição', type: 'multiline', required: true },
@@ -85,13 +93,36 @@ const ENTITY_CONFIG: any = {
       { key: 'alignment', label: 'Alinhamento', type: 'text' },
     ],
   },
+  note: {
+    label: 'Nota',
+    table: 'notes',
+    hasImage: false,
+    fields: [
+      { key: 'title', label: 'Título', type: 'text', required: true },
+      { key: 'content', label: 'Conteúdo', type: 'multiline', required: true },
+      { key: 'tags', label: 'Tags', type: 'list' },
+    ],
+  },
 };
 
 export default function UniversalFormScreen({ route, navigation }: any) {
   const { colors } = useTheme();
-  const headerHeight = useHeaderHeight();
-  const { entityType, editData } = route.params;
   
+  let headerHeight = 0;
+  try { headerHeight = useHeaderHeight(); } catch (e) {}
+
+  const params = route.params || {};
+  const { entityType, editData } = params;
+  
+  if (!entityType || !ENTITY_CONFIG[entityType]) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ color: colors.text }}>Erro: Tipo de entidade inválido.</Text>
+        <Button title="Voltar" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
+
   const config = ENTITY_CONFIG[entityType];
   
   const [formData, setFormData] = useState<any>({});
@@ -131,6 +162,23 @@ export default function UniversalFormScreen({ route, navigation }: any) {
     }
   }, [editData, config, navigation]);
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], 
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setFormData({ ...formData, imageUri: result.assets[0].uri });
+    }
+  };
+
+  const removeImage = () => {
+    setFormData({ ...formData, imageUri: null });
+  };
+
   const addItem = (key: string) => {
     const value = tempInputs[key];
     if (!value || !value.trim()) return;
@@ -144,39 +192,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
     const currentList = [...(formData[key] || [])];
     currentList.splice(index, 1);
     setFormData({ ...formData, [key]: currentList });
-  };
-
-  const handleDelete = async () => {
-    Alert.alert(
-      'Excluir Item',
-      `Tem certeza que deseja excluir "${formData.name || 'este item'}"? Essa ação não pode ser desfeita.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await databaseService.delete(config.table, editData.id);
-              if (navigation.canGoBack()) {
-                navigation.goBack(); 
-                navigation.navigate(
-                  config.table === 'characters' ? 'CharacterList' : 
-                  config.table === 'locations' ? 'LocationList' : 
-                  'EncyclopediaHome' // Fallback
-                );
-              }
-            } catch (error) {
-              console.error(error);
-              Alert.alert('Erro', 'Não foi possível excluir o item.');
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
   };
 
   const handleSave = async () => {
@@ -228,6 +243,45 @@ export default function UniversalFormScreen({ route, navigation }: any) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
+          
+          {config.hasImage && (
+            <View style={styles.imageSection}>
+              <TouchableOpacity 
+                style={[
+                  styles.imagePicker, 
+                  { 
+                    backgroundColor: colors.surface, 
+                    borderColor: colors.border,
+                    borderWidth: formData.imageUri ? 0 : 2,
+                    borderStyle: formData.imageUri ? 'solid' : 'dashed'
+                  }
+                ]} 
+                onPress={pickImage}
+              >
+                {formData.imageUri ? (
+                  <Image source={{ uri: formData.imageUri }} style={styles.imagePreview} />
+                ) : (
+                  <View style={styles.imagePlaceholder}>
+                    <Ionicons name="image-outline" size={40} color={colors.textSecondary} />
+                    <Text style={[styles.imagePlaceholderText, { color: colors.textSecondary }]}>
+                      Adicionar Imagem
+                    </Text>
+                  </View>
+                )}
+
+                <View style={[styles.editBadge, { backgroundColor: Colors.primary }]}>
+                  <Ionicons name={formData.imageUri ? "pencil" : "add"} size={16} color="#fff" />
+                </View>
+              </TouchableOpacity>
+
+              {formData.imageUri && (
+                <TouchableOpacity onPress={removeImage} style={styles.removeImageButton}>
+                  <Text style={{ color: colors.error, fontSize: 12 }}>Remover imagem</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           {config.fields.map((field: any) => (
             <View key={field.key} style={styles.inputGroup}>
               <Text style={[styles.label, { color: colors.textSecondary }]}>
@@ -242,7 +296,7 @@ export default function UniversalFormScreen({ route, navigation }: any) {
                         styles.input, 
                         { flex: 1, backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }
                       ]}
-                      placeholder={`Adicionar ${field.label.toLowerCase()}...`}
+                      placeholder={`Adicionar...`}
                       placeholderTextColor={colors.textSecondary + '80'}
                       value={tempInputs[field.key] || ''}
                       onChangeText={(text) => setTempInputs({ ...tempInputs, [field.key]: text })}
@@ -303,18 +357,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
               loading={loading}
               fullWidth 
             />
-            
-            {editData && (
-              <View style={{ marginTop: 12 }}>
-                <Button 
-                  title="Excluir" 
-                  onPress={handleDelete}
-                  variant="danger" 
-                  icon="trash"
-                  fullWidth 
-                />
-              </View>
-            )}
           </View>
         </View>
       </ScrollView>
@@ -325,6 +367,52 @@ export default function UniversalFormScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   form: { padding: Spacing.lg },
+  imageSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  imagePicker: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    ...Shadows.md,
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imagePlaceholderText: {
+    fontSize: 12,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  removeImageButton: {
+    marginTop: 8,
+    padding: 4,
+  },
   inputGroup: { marginBottom: Spacing.lg },
   label: { 
     fontSize: 14, 
