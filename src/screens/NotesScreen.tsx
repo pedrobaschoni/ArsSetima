@@ -221,7 +221,7 @@ export default function NotesScreen({ navigation }: any) {
         onPress={() => navigation.navigate('EntityForm', { entityType: 'note' })}
       >
         <LinearGradient
-          colors={[Colors.primary, '#8b5cf6'] as [string, string]} // CORREÇÃO AQUI TAMBÉM
+          colors={[Colors.primary, '#8b5cf6'] as [string, string]}
           style={styles.fabGradient}
         >
           <Ionicons name="add" size={32} color="#fff" />

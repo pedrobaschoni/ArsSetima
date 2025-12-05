@@ -17,7 +17,7 @@ interface EntityCardProps {
   imageUri?: string;
   icon?: keyof typeof Ionicons.glyphMap;
   tags?: string[];
-  accentColor?: string; // Nova prop para cor personalizada
+  accentColor?: string;
   onPress?: () => void;
   onLongPress?: () => void;
 }
@@ -28,7 +28,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   imageUri,
   icon = 'document-text',
   tags,
-  accentColor = Colors.primary, // Cor padrão se não for passada
+  accentColor = Colors.primary,
   onPress,
   onLongPress,
 }) => {
@@ -41,7 +41,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
         { 
           backgroundColor: colors.surface,
           borderColor: colors.border,
-          borderLeftColor: accentColor, // Borda lateral colorida
+          borderLeftColor: accentColor,
         }
       ]}
       onPress={onPress}
@@ -111,9 +111,8 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderLeftWidth: 4, // Barra de destaque lateral
+    borderLeftWidth: 4,
     ...Shadows.sm,
-    // Sombra mais suave e moderna
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -123,7 +122,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     padding: Spacing.md,
-    alignItems: 'flex-start', // Alinha ao topo para suportar descrições longas
+    alignItems: 'flex-start',
   },
   mediaContainer: {
     marginRight: Spacing.md,
@@ -137,14 +136,14 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 50,
     height: 50,
-    borderRadius: 14, // Squircle
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
-    minHeight: 50, // Garante altura mínima alinhada com o ícone
+    minHeight: 50,
   },
   headerRow: {
     flexDirection: 'row',

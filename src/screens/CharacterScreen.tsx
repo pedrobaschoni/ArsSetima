@@ -16,7 +16,6 @@ export default function CharacterScreen({ navigation }: any) {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carrega os dados toda vez que a tela ganha foco (ao voltar de outra tela)
   useFocusEffect(
     useCallback(() => {
       loadCharacters();
@@ -25,18 +24,13 @@ export default function CharacterScreen({ navigation }: any) {
 
   const loadCharacters = async () => {
     try {
-      // Não ativamos o loading visual aqui para não piscar a tela na atualização silenciosa
       const data = await databaseService.getAll<Character>('characters');
-      
-      // Corrige os dados que vêm como string do banco
       const formattedData = data.map(char => ({
         ...char,
         powers: parseList(char.powers),
         tags: parseList(char.tags),
         relations: parseList(char.relations),
       }));
-
-      // Inverte a ordem para o mais recente aparecer primeiro
       setCharacters(formattedData.reverse());
     } catch (error) {
       console.error('Error loading characters:', error);
@@ -57,7 +51,6 @@ export default function CharacterScreen({ navigation }: any) {
             onLongPress={() => navigation.navigate('EntityForm', { entityType: 'character', editData: item })}
           />
         )}
-        // Espaço extra no final para o botão flutuante não tapar o último card
         contentContainerStyle={{ paddingBottom: 100, paddingTop: 10 }}
         ListEmptyComponent={!loading && (
           <EmptyState 

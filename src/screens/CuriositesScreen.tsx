@@ -3,7 +3,7 @@ import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { EntityCard } from '../components/EntityCard'; // Reusando seu card bonito
+import { EntityCard } from '../components/EntityCard';
 import { EmptyState } from '../components/EmptyState';
 import { useTheme } from '../utils/ThemeContext';
 import { Curiosity } from '../types/curiosity';
@@ -16,7 +16,6 @@ export default function CuriositiesScreen({ navigation }: any) {
   const [curiosities, setCuriosities] = useState<Curiosity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cor temática (Ciano/Teal para diferenciar)
   const ACCENT_COLOR = '#0891b2';
 
   useFocusEffect(
@@ -50,7 +49,7 @@ export default function CuriositiesScreen({ navigation }: any) {
             title={item.title}
             description={item.content}
             imageUri={item.imageUri}
-            icon="bulb" // Ícone de lâmpada/curiosidade
+            icon="bulb"
             tags={item.tags}
             accentColor={ACCENT_COLOR}
             onPress={() => navigation.navigate('EntityDetail', { entityType: 'curiosity', data: item })}

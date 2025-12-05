@@ -4,28 +4,21 @@ import { Character } from '../types/character';
 import { Location } from '../types/location';
 import { TimelineEvent } from '../types/event';
 
-/**
- * Serviço de geração de PDFs
- * Cria documentos PDF formatados para diferentes tipos de entidades
- */
 class PDFService {
-  /**
-   * Define cores para cada tipo de entidade
-   */
   private readonly typeColors: Record<string, { primary: string; secondary: string; accent: string }> = {
     character: { primary: '#6B21A8', secondary: '#8b5cf6', accent: '#9F7AEA' },
-    location: { primary: '#9F7AEA', secondary: '#c4b5fd', accent: '#e9d5ff' }, // Roxo claro
-    spell: { primary: '#dc2626', secondary: '#ef4444', accent: '#fca5a5' }, // Vermelho
-    item: { primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' }, // Azul
-    creature: { primary: '#10b981', secondary: '#34d399', accent: '#6ee7b7' }, // Verde
-    faction: { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' }, // Amarelo
-    event: { primary: '#2563eb', secondary: '#3b82f6', accent: '#93c5fd' }, // Azul (padrão, pode variar por importância)
-    curiosity: { primary: '#0891b2', secondary: '#06b6d4', accent: '#22d3ee' }, // Azul da curiosidade
-    note: { primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' }, // Cinza (padrão, pode variar por prioridade)
+    location: { primary: '#9F7AEA', secondary: '#c4b5fd', accent: '#e9d5ff' },
+    spell: { primary: '#dc2626', secondary: '#ef4444', accent: '#fca5a5' },
+    item: { primary: '#3b82f6', secondary: '#60a5fa', accent: '#93c5fd' },
+    creature: { primary: '#10b981', secondary: '#34d399', accent: '#6ee7b7' },
+    faction: { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' },
+    event: { primary: '#2563eb', secondary: '#3b82f6', accent: '#93c5fd' },
+    curiosity: { primary: '#0891b2', secondary: '#06b6d4', accent: '#22d3ee' },
+    note: { primary: '#64748b', secondary: '#94a3b8', accent: '#cbd5e1' },
   };
 
   /**
-   * Gera estilos CSS dinâmicos baseado no tipo
+   * Generates dynamic CSS styles based on entity type and custom colors
    */
   private getStyles(entityType: string, customColors?: { primary: string; secondary: string; accent: string }) {
     const colors = customColors || this.typeColors[entityType] || this.typeColors.character;
@@ -494,7 +487,6 @@ class PDFService {
     try {
       const { uri } = await Print.printToFileAsync({ html });
       
-      // Compartilha o PDF
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
         await Sharing.shareAsync(uri, {
@@ -673,14 +665,13 @@ class PDFService {
   }
 
   /**
-   * Gera PDF para Eventos (cor baseada na importância)
+   * Generates PDF for Events with dynamic colors based on importance level
    */
   async generateEventPDF(title: string, data: any): Promise<string> {
-    // Define cores por importância
     const importanceColors: Record<string, { primary: string; secondary: string; accent: string }> = {
-      'high': { primary: '#ef4444', secondary: '#f87171', accent: '#fca5a5' }, // Vermelho
-      'medium': { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' }, // Amarelo
-      'low': { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' }, // Cinza
+      'high': { primary: '#ef4444', secondary: '#f87171', accent: '#fca5a5' },
+      'medium': { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' },
+      'low': { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
     };
     
     const importance = data.importance || 'medium';
@@ -726,11 +717,10 @@ class PDFService {
    * Gera PDF para Notas (cor baseada na prioridade)
    */
   async generateNotePDF(title: string, data: any): Promise<string> {
-    // Define cores por prioridade
     const priorityColors: Record<string, { primary: string; secondary: string; accent: string }> = {
-      'high': { primary: '#ef4444', secondary: '#f87171', accent: '#fca5a5' }, // Vermelho
-      'medium': { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' }, // Amarelo
-      'low': { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' }, // Cinza
+      'high': { primary: '#ef4444', secondary: '#f87171', accent: '#fca5a5' },
+      'medium': { primary: '#f59e0b', secondary: '#fbbf24', accent: '#fcd34d' },
+      'low': { primary: '#6b7280', secondary: '#9ca3af', accent: '#d1d5db' },
     };
     
     const priority = data.priority || 'medium';

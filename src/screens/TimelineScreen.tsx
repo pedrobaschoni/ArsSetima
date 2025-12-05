@@ -15,7 +15,6 @@ export default function TimelineScreen({ navigation }: any) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cor temática (Dourado/Tempo)
   const ACCENT_COLOR = Colors.accent;
 
   useFocusEffect(
@@ -27,18 +26,13 @@ export default function TimelineScreen({ navigation }: any) {
   const loadEvents = async () => {
     try {
       const data = await databaseService.getAll<TimelineEvent>('events');
-      
-      // Ordena por data
-      // Tenta converter para data real, se não conseguir (ex: "Ano 1000 AC"), joga para o fim ou mantém ordem
       const sorted = data.sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
         
-        // Se ambas forem datas válidas, ordena cronologicamente (mais recente no topo)
         if (!isNaN(dateA) && !isNaN(dateB)) {
           return dateB - dateA;
         }
-        // Se não forem datas padrão JS, mantém a ordem de criação ou alfabética
         return 0;
       });
       
@@ -58,11 +52,9 @@ export default function TimelineScreen({ navigation }: any) {
         renderItem={({ item }) => (
           <TimelineItem 
             event={item} 
-            // Abre a tela de detalhes genérica configurada para eventos
             onPress={() => navigation.navigate('EntityDetail', { entityType: 'event', data: item })}
           />
         )}
-        // Padding bottom garante que o último item não fique escondido atrás do botão +
         contentContainerStyle={{ paddingBottom: 100, paddingTop: 10 }}
         ListEmptyComponent={!loading && (
           <EmptyState 

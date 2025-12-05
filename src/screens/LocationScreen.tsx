@@ -16,7 +16,6 @@ export default function LocationScreen({ navigation }: any) {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Cor temática para esta tela
   const ACCENT_COLOR = Colors.secondary;
 
   useFocusEffect(
@@ -53,7 +52,7 @@ export default function LocationScreen({ navigation }: any) {
             imageUri={item.imageUri}
             icon="location"
             tags={item.tags}
-            accentColor={ACCENT_COLOR} // Cor personalizada
+            accentColor={ACCENT_COLOR}
             onPress={() => navigation.navigate('LocationDetail', { location: item })}
             onLongPress={() => navigation.navigate('EntityForm', { entityType: 'location', editData: item })}
           />

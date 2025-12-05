@@ -197,7 +197,6 @@ export default function UniversalFormScreen({ route, navigation }: any) {
       const initialData: any = {};
       config.fields.forEach((field: any) => {
         if (field.type === 'list') initialData[field.key] = [];
-        // Define média como padrão para prioridade
         if (field.type === 'select' && field.options.length > 0) {
            initialData[field.key] = field.options[1].value;
         }

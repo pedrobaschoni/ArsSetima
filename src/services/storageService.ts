@@ -34,7 +34,6 @@ class StorageService {
       if (data) {
         return JSON.parse(data);
       }
-      // Configurações padrão
       return {
         theme: 'dark',
         fontSize: 'medium',
@@ -52,7 +51,6 @@ class StorageService {
    */
   async exportData(): Promise<string> {
     try {
-      // Coleta todos os dados do banco
       const characters = await databaseService.getAll('characters');
       const locations = await databaseService.getAll('locations');
       const events = await databaseService.getAll('events');
@@ -77,7 +75,6 @@ class StorageService {
         chapters,
       };
 
-      // Cria o diretório de backup se não existir
       const dirInfo = await FileSystem.getInfoAsync(this.BACKUP_DIR);
       if (!dirInfo.exists) {
         await FileSystem.makeDirectoryAsync(this.BACKUP_DIR, {
@@ -122,7 +119,6 @@ class StorageService {
    */
   async importData(): Promise<void> {
     try {
-      // Seleciona o arquivo
       const result = await DocumentPicker.getDocumentAsync({
         type: 'application/json',
       });
@@ -131,16 +127,13 @@ class StorageService {
         return;
       }
 
-      // Lê o conteúdo do arquivo
       const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
       const backupData: BackupData = JSON.parse(fileContent);
 
-      // Valida a estrutura do backup
       if (!backupData.version || !backupData.exportDate) {
         throw new Error('Invalid backup file format');
       }
 
-      // Importa os dados (sobrescreve os existentes)
       await this.importEntities('characters', backupData.characters);
       await this.importEntities('locations', backupData.locations);
       await this.importEntities('events', backupData.events);
@@ -169,14 +162,11 @@ class StorageService {
 
     for (const entity of entities) {
       try {
-        // Verifica se já existe
         const existing = await databaseService.getById(table, entity.id);
         
         if (existing) {
-          // Atualiza
           await databaseService.update(table, entity.id, entity);
         } else {
-          // Insere
           await databaseService.insert(table, entity);
         }
       } catch (error) {

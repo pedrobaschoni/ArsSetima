@@ -22,7 +22,6 @@ import { databaseService } from '../database/migrations';
 
 const { width } = Dimensions.get('window');
 
-// --- Interfaces ---
 interface DashboardStats {
   characters: number;
   locations: number;
@@ -49,9 +48,6 @@ interface SearchEntry {
 
 const PROGRESS_STORAGE_KEY = '@arssetima:bookProgress';
 
-// --- Componentes Auxiliares ---
-
-// 1. Header Imersivo COM Busca Integrada
 const HeaderWithSearch = ({ onSettingsPress, colors, searchQuery, onSearchChange }: any) => (
   <View style={styles.headerContainer}>
     <LinearGradient
@@ -213,8 +209,6 @@ const ProgressSection = ({
     </View>
   );
 };
-
-// --- TELA PRINCIPAL ---
 
 export default function HomeScreen({ navigation }: any) {
   const { colors, theme, fontMultiplier } = useTheme();
