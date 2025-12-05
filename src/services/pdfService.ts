@@ -1,5 +1,6 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Character } from '../types/character';
 import { Location } from '../types/location';
 import { TimelineEvent } from '../types/event';
@@ -487,15 +488,24 @@ class PDFService {
     try {
       const { uri } = await Print.printToFileAsync({ html });
       
+      const cleanFileName = fileName.replace(/[^\w\s.-]/g, '_').replace(/\s+/g, '_');
+      const baseDir = (((FileSystem as any).documentDirectory) || ((FileSystem as any).cacheDirectory) || '');
+      const newPath = `${baseDir}${cleanFileName}`;
+      
+      await FileSystem.copyAsync({
+        from: uri,
+        to: newPath,
+      });
+      
       const isAvailable = await Sharing.isAvailableAsync();
       if (isAvailable) {
-        await Sharing.shareAsync(uri, {
+        await Sharing.shareAsync(newPath, {
           UTI: '.pdf',
           mimeType: 'application/pdf',
         });
       }
 
-      return uri;
+      return newPath;
     } catch (error) {
       console.error('Error creating PDF:', error);
       throw error;
