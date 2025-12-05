@@ -217,14 +217,61 @@ export default function EntityDetailScreen({ route, navigation }: any) {
     await pdfService.generateCustomPDF(data.name || data.title, content, `${data.name || data.title}.pdf`);
   };
 
-  const StatBadge = ({ icon, label, value }: any) => {
+  // Função para formatar a importância em português
+  const formatImportance = (importance?: string) => {
+    if (!importance) return '';
+    const level = importance.toLowerCase().trim();
+    switch (level) {
+      case 'high': return 'Alta';
+      case 'medium': return 'Média';
+      case 'low': return 'Baixa';
+      default: return importance;
+    }
+  };
+
+  // Função para formatar a data para o padrão brasileiro
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+      // Verifica se é formato ISO (YYYY-MM-DD)
+      const isoDatePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+      const match = dateString.match(isoDatePattern);
+      
+      if (match) {
+        const [, year, month, day] = match;
+        return `${day}/${month}/${year}`;
+      }
+      
+      // Se for uma data válida, tenta formatar
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('pt-BR');
+      }
+      
+      // Se não for, retorna o texto original (como "Era Antiga")
+      return dateString;
+    } catch {
+      return dateString;
+    }
+  };
+
+  const StatBadge = ({ icon, label, value, fieldKey }: any) => {
     if (!value) return null;
+    
+    // Formata o valor baseado no tipo de campo
+    let displayValue = value;
+    if (fieldKey === 'importance') {
+      displayValue = formatImportance(value);
+    } else if (fieldKey === 'date') {
+      displayValue = formatDate(value);
+    }
+    
     return (
       <View style={[styles.statBadge, { backgroundColor: theme.color + '15', borderColor: theme.color + '30' }]}>
         <Ionicons name={icon} size={16} color={theme.color} style={{ marginRight: 6 }} />
         <View>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
-          <Text style={[styles.statValue, { color: theme.color }]}>{value}</Text>
+          <Text style={[styles.statValue, { color: theme.color }]}>{displayValue}</Text>
         </View>
       </View>
     );
@@ -274,7 +321,8 @@ export default function EntityDetailScreen({ route, navigation }: any) {
                   key={stat.key} 
                   icon={stat.icon} 
                   label={stat.label} 
-                  value={data[stat.key]} 
+                  value={data[stat.key]}
+                  fieldKey={stat.key}
                 />
               ))}
             </View>

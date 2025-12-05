@@ -1,197 +1,206 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { TimelineEvent } from '../types/event';
 import { useTheme } from '../utils/ThemeContext';
-import { Colors, Spacing, BorderRadius, Shadows } from '../utils/theme';
-import { formatDate } from '../utils/helpers';
+import { TimelineEvent } from '../types/event';
+import { Spacing, BorderRadius, Colors, Shadows } from '../utils/theme';
 
 interface TimelineItemProps {
   event: TimelineEvent;
   onPress?: () => void;
 }
 
-/**
- * Item de evento para a linha do tempo
- */
-export const TimelineItem: React.FC<TimelineItemProps> = ({
-  event,
-  onPress,
-}) => {
+export const TimelineItem: React.FC<TimelineItemProps> = ({ event, onPress }) => {
   const { colors } = useTheme();
 
-  const getImportanceColor = () => {
-    switch (event.importance) {
-      case 'high':
-        return '#ef4444'; // Vermelho
-      case 'medium':
-        return Colors.accent; // Âmbar/Laranja
-      case 'low':
-        return '#10b981'; // Verde
-      default:
-        return Colors.secondary;
+  const getImportanceColor = (importance?: string) => {
+    const level = importance?.toLowerCase().trim();
+    switch (level) {
+      case 'high': 
+      case 'alta': return '#ef4444';
+      case 'medium': 
+      case 'media': 
+      case 'média': return '#f59e0b';
+      case 'low': 
+      case 'baixa': return '#10b981';
+      default: return colors.textSecondary;
+    }
+  };
+
+  const accentColor = getImportanceColor(event.importance);
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+          .toUpperCase()
+          .replace('.', '');
+      }
+      return dateString;
+    } catch {
+      return dateString;
     }
   };
 
   return (
-    <TouchableOpacity
-      style={styles.container}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      {/* Linha da timeline */}
+    <View style={styles.timelineContainer}>
       <View style={styles.timelineColumn}>
-        <View
-          style={[
-            styles.dot,
-            { backgroundColor: getImportanceColor() },
-          ]}
-        />
-        <View style={[styles.line, { backgroundColor: colors.border }]} />
+        <View style={[styles.dot, { backgroundColor: accentColor }]} />
+        <View style={[styles.timelineLine, { backgroundColor: colors.border }]} />
       </View>
 
-      {/* Card do evento */}
-      <View style={[styles.card, { backgroundColor: colors.surface }]}>
-        {/* Data */}
-        <View style={styles.dateContainer}>
-          <Ionicons
-            name="calendar-outline"
-            size={16}
-            color={Colors.accent}
-          />
-          <Text style={[styles.date, { color: Colors.accent }]}>
-            {formatDate(event.date)}
-          </Text>
+      <TouchableOpacity
+        style={[
+          styles.card, 
+          { 
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          }
+        ]}
+        onPress={onPress}
+        activeOpacity={0.9}
+      >
+        <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
+
+        <View style={styles.contentContainer}>
+          <View style={styles.headerColumn}>
+            
+            <View style={styles.dateContainer}>
+              <Ionicons name="calendar-clear-outline" size={12} color={colors.textSecondary} style={{ marginRight: 6 }} />
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>
+                {formatDate(event.date)}
+              </Text>
+            </View>
+
+            {event.category && (
+              <View style={[styles.categoryBadge, { backgroundColor: accentColor + '15', borderColor: accentColor + '30' }]}>
+                <Text style={[styles.categoryText, { color: accentColor }]}>
+                  {event.category.toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.body}>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {event.title}
+            </Text>
+            
+            {event.description && (
+              <Text 
+                style={[styles.description, { color: colors.textSecondary }]} 
+                numberOfLines={2}
+              >
+                {event.description}
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Título */}
-        <Text style={[styles.title, { color: colors.text }]}>
-          {event.title}
-        </Text>
-
-        {/* Descrição */}
-        <Text
-          style={[styles.description, { color: colors.textSecondary }]}
-          numberOfLines={3}
-        >
-          {event.description}
-        </Text>
-
-        {/* Categoria */}
-        {event.category && (
-          <View style={styles.categoryContainer}>
-            <View style={styles.categoryTag}>
-              <Text style={styles.categoryText}>{event.category}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Links */}
-        {(event.links?.characters?.length || event.links?.locations?.length) && (
-          <View style={styles.linksContainer}>
-            {event.links.characters && event.links.characters.length > 0 && (
-              <View style={styles.linkBadge}>
-                <Ionicons name="person" size={14} color={Colors.secondary} />
-                <Text style={[styles.linkText, { color: Colors.secondary }]}>
-                  {event.links.characters.length}
-                </Text>
-              </View>
-            )}
-            {event.links.locations && event.links.locations.length > 0 && (
-              <View style={styles.linkBadge}>
-                <Ionicons name="location" size={14} color={Colors.secondary} />
-                <Text style={[styles.linkText, { color: Colors.secondary }]}>
-                  {event.links.locations.length}
-                </Text>
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
+        <View style={styles.iconContainer}>
+          <Ionicons name="chevron-forward" size={18} color={colors.textSecondary + '60'} />
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  timelineContainer: {
     flexDirection: 'row',
     marginHorizontal: Spacing.md,
-    marginVertical: Spacing.sm,
+    marginVertical: 8,
   },
   timelineColumn: {
     width: 40,
     alignItems: 'center',
+    marginRight: Spacing.sm,
   },
   dot: {
     width: 16,
     height: 16,
-    borderRadius: BorderRadius.full,
-    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 3,
+    borderColor: '#fff',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  line: {
+  timelineLine: {
     width: 2,
     flex: 1,
     marginTop: 4,
   },
   card: {
     flex: 1,
-    padding: Spacing.md,
+    flexDirection: 'row',
     borderRadius: BorderRadius.lg,
-    marginLeft: Spacing.sm,
-    ...Shadows.md,
+    borderWidth: 1,
+    overflow: 'hidden',
+    minHeight: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  accentBar: {
+    width: 5,
+    height: '100%',
+  },
+  contentContainer: {
+    flex: 1,
+    padding: Spacing.md,
+    justifyContent: 'center',
+  },
+  headerColumn: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: 4,
   },
-  date: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: Spacing.xs,
+  dateText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: Spacing.sm,
-  },
-  categoryContainer: {
-    marginBottom: Spacing.sm,
-  },
-  categoryTag: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.sm,
+  categoryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
   categoryText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
-  linksContainer: {
-    flexDirection: 'row',
-    marginTop: Spacing.xs,
+  body: {
+    justifyContent: 'center',
   },
-  linkBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: Spacing.md,
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 4,
+    letterSpacing: 0.2,
   },
-  linkText: {
-    fontSize: 12,
-    marginLeft: 4,
-    fontWeight: '500',
+  description: {
+    fontSize: 13,
+    lineHeight: 19,
+    opacity: 0.8,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    paddingRight: Spacing.md,
+    paddingLeft: Spacing.xs,
   },
 });
