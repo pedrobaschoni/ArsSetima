@@ -115,16 +115,6 @@ ArsSétima/
         └── helpers.ts
 ```
 
-## 🎨 Paleta de Cores
-
-O app usa uma paleta inspirada em "Londres fantástica + magia":
-
-- **Primária (Magia)**: `#6B21A8` - Roxo profundo
-- **Secundária (Brilho)**: `#9F7AEA` - Lavanda
-- **Acento (CTA)**: `#F59E0B` - Dourado suave
-- **Fundo escuro**: `#0B0F1A`
-- **Texto**: `#E6E7EA`
-
 ## 📦 Gerando APK para Android
 
 ### Método 1: Expo Build (Recomendado)
@@ -156,120 +146,6 @@ expo build:android -t apk
 ```
 
 > **Nota**: Builds locais podem requerer configuração adicional do Android SDK.
-
-## 📱 Publicando na Google Play Store
-
-### Preparação
-
-1. **Crie uma conta de desenvolvedor** na [Google Play Console](https://play.google.com/console) ($25 taxa única)
-
-2. **Configure o app.json** com informações corretas:
-   ```json
-   {
-     "expo": {
-       "name": "ArsSétima",
-       "android": {
-         "package": "com.seudominio.arssetima",
-         "versionCode": 1,
-         "permissions": []
-       }
-     }
-   }
-   ```
-
-3. **Gere um keystore** (para produção):
-   ```bash
-   eas credentials
-   ```
-
-### Build de Produção
-
-```bash
-# Gerar AAB (Android App Bundle - formato requerido pela Play Store)
-eas build --platform android --profile production
-```
-
-### Upload na Play Store
-
-1. Acesse [Google Play Console](https://play.google.com/console)
-2. Crie um novo aplicativo
-3. Preencha:
-   - **Detalhes do app**: Nome, descrição, categoria
-   - **Screenshots**: Mínimo 2 capturas de tela
-   - **Ícone**: 512x512px
-   - **Gráfico de recurso**: 1024x500px
-4. Faça upload do AAB gerado
-5. Configure preços e distribuição
-6. Envie para revisão
-
-### Atualizações Futuras
-
-Para publicar atualizações:
-
-1. Incremente o `versionCode` e `version` no `app.json`:
-   ```json
-   {
-     "version": "1.0.1",
-     "android": {
-       "versionCode": 2
-     }
-   }
-   ```
-
-2. Gere novo build:
-   ```bash
-   eas build --platform android --profile production
-   ```
-
-3. Faça upload do novo AAB no Play Console
-
-## 🔧 Personalização
-
-### Alterando Cores
-
-Edite `src/utils/theme.ts`:
-
-```typescript
-export const Colors = {
-  primary: '#SUA_COR',
-  secondary: '#SUA_COR',
-  // ...
-};
-```
-
-### Adicionando Novas Categorias
-
-1. Crie o tipo em `src/types/`
-2. Adicione a tabela em `src/database/migrations.ts`
-3. Crie a tela em `src/screens/`
-4. Adicione à navegação em `src/navigation/index.tsx`
-
-### Modificando Dados Seed
-
-Edite `seed/seed-data.json` com seus próprios dados iniciais.
-
-## 🐛 Troubleshooting
-
-### Erro de compilação TypeScript
-
-Os erros sobre módulos não encontrados são normais antes de rodar `npm install`. Após a instalação, o Expo resolverá automaticamente.
-
-### App não abre no Expo Go
-
-1. Certifique-se de que celular e computador estão na mesma rede
-2. Tente escanear o QR code novamente
-3. Use a opção "Tunnel" no menu do Expo CLI
-
-### Erro ao gerar PDF
-
-Certifique-se de conceder permissões de armazenamento quando solicitado.
-
-### Banco de dados não inicializa
-
-Limpe o cache:
-```bash
-expo start -c
-```
 
 ## 📚 Tecnologias Utilizadas
 
@@ -306,15 +182,6 @@ Este projeto é de uso pessoal. © 2025
 - [ ] Exportação para e-book (EPUB)
 - [ ] Modo de apresentação para pitches
 
-## 📞 Suporte
-
-Para dúvidas ou problemas:
-- Abra uma issue no repositório
-- Consulte a [documentação do Expo](https://docs.expo.dev/)
-- Visite [React Native docs](https://reactnative.dev/)
-
----
-
-**Desenvolvido com ❤️ para escritores de fantasia urbana**
+**Desenvolvido para escritores de fantasia urbana**
 
 *"O verdadeiro poder está nas histórias que contamos"*
