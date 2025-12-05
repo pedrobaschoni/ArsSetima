@@ -6,8 +6,6 @@ import { StyleSheet } from 'react-native';
 import { ThemeProvider } from './src/utils/ThemeContext';
 import Navigation from './src/navigation';
 import { databaseService } from './src/database/migrations';
-import { storageService } from './src/services/storageService';
-import seedData from './seed/seed-data.json';
 
 /**
  * App principal do ArsSétima
@@ -24,22 +22,11 @@ export default function App() {
    */
   const initializeApp = async () => {
     try {
-      // Inicializa o banco de dados
       await databaseService.init();
-      
-      // Verifica se é a primeira vez (sem dados)
-      const characters = await databaseService.getAll('characters');
-      
-      // Se não houver dados, carrega os dados seed
-      if (characters.length === 0) {
-        console.log('Loading seed data...');
-        await storageService.loadSeedData(seedData);
-      }
-      
       setIsReady(true);
     } catch (error) {
       console.error('Error initializing app:', error);
-      setIsReady(true); // Continua mesmo com erro
+      setIsReady(true);
     }
   };
 
