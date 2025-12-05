@@ -28,6 +28,7 @@ export default function LocationDetailScreen({ route, navigation }: any) {
   
   const [location, setLocation] = useState(initialLocation);
   const [loading, setLoading] = useState(false);
+  const safeTags = Array.isArray(location.tags) ? location.tags : parseList(location.tags || '');
   
   const THEME_COLOR = Colors.secondary;
   const THEME_ICON = 'location';
@@ -184,14 +185,14 @@ export default function LocationDetailScreen({ route, navigation }: any) {
           </View>
 
           {/* --- TAGS --- */}
-          {location.tags && location.tags.length > 0 && (
+          {safeTags && safeTags.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="pricetags" size={20} color={THEME_COLOR} style={{ marginRight: 8 }} />
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Categorias</Text>
               </View>
               <View style={styles.tagsContainer}>
-                {location.tags.map((tag: string, index: number) => (
+                {safeTags.map((tag: string, index: number) => (
                   <View 
                     key={index} 
                     style={[styles.tag, { backgroundColor: colors.surface, borderColor: THEME_COLOR + '40' }]}

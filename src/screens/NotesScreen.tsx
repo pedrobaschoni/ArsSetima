@@ -22,7 +22,7 @@ const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - Spacing.lg * 3) / 2;
 
 export default function NotesScreen({ navigation }: any) {
-  const { colors, theme } = useTheme();
+  const { colors, theme, fontMultiplier } = useTheme();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -143,7 +143,7 @@ export default function NotesScreen({ navigation }: any) {
         <View style={styles.cardContent}>
           <View>
             <View style={styles.header}>
-              <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+              <Text style={[styles.title, { color: colors.text, fontSize: 16 * fontMultiplier }]} numberOfLines={2}>
                 {item.title}
               </Text>
               <Ionicons 
@@ -154,7 +154,7 @@ export default function NotesScreen({ navigation }: any) {
               />
             </View>
 
-            <Text style={[styles.preview, { color: colors.textSecondary }]} numberOfLines={3}>
+            <Text style={[styles.preview, { color: colors.textSecondary, fontSize: 13 * fontMultiplier }]} numberOfLines={3}>
               {item.content}
             </Text>
 
@@ -287,14 +287,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
-    fontSize: 16,
     fontWeight: '700',
     flex: 1,
     marginRight: 4,
     letterSpacing: 0.3,
   },
   preview: {
-    fontSize: 13,
     lineHeight: 18,
     opacity: 0.8,
     marginBottom: 8,

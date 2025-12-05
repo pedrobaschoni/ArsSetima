@@ -125,6 +125,9 @@ export default function CharacterDetailScreen({ route, navigation }: any) {
     </View>
   );
 
+  const powersList = Array.isArray(character.powers) ? character.powers : parseList(character.powers || '');
+  const notesList = Array.isArray(character.notes) ? character.notes : parseList(character.notes || '');
+
   if (loading) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
@@ -166,8 +169,8 @@ export default function CharacterDetailScreen({ route, navigation }: any) {
             {character.age && (
               <StatBadge icon="calendar" label="Idade" value={`${character.age} anos`} />
             )}
-            {character.powers && (
-              <StatBadge icon="flash" label="Poderes" value={character.powers.length} />
+            {powersList && powersList.length > 0 && (
+              <StatBadge icon="flash" label="Poderes" value={powersList.length} />
             )}
           </View>
 
@@ -183,14 +186,14 @@ export default function CharacterDetailScreen({ route, navigation }: any) {
             </View>
           )}
 
-          {character.powers && character.powers.length > 0 && (
+          {powersList && powersList.length > 0 && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="flash" size={20} color={THEME_COLOR} style={{ marginRight: 8 }} />
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Poderes & Habilidades</Text>
               </View>
               <View style={styles.tagsContainer}>
-                {character.powers.map((power: string, index: number) => (
+                {powersList.map((power: string, index: number) => (
                   <View 
                     key={index} 
                     style={[styles.tag, { backgroundColor: colors.surface, borderColor: THEME_COLOR + '40' }]}
@@ -214,16 +217,16 @@ export default function CharacterDetailScreen({ route, navigation }: any) {
             </View>
           )}
 
-          {character.notes && (
+          {notesList && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Ionicons name="document-text" size={20} color={THEME_COLOR} style={{ marginRight: 8 }} />
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Notas</Text>
               </View>
               
-              {Array.isArray(character.notes) && character.notes.length > 0 ? (
+              {Array.isArray(notesList) && notesList.length > 0 ? (
                 <View style={{ gap: 8 }}>
-                  {character.notes.map((note: string, index: number) => (
+                  {notesList.map((note: string, index: number) => (
                     <View key={index} style={[styles.noteBox, { backgroundColor: colors.surface, borderColor: THEME_COLOR + '30' }]}>
                       <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>{note}</Text>
                     </View>
@@ -231,7 +234,7 @@ export default function CharacterDetailScreen({ route, navigation }: any) {
                 </View>
               ) : (
                 <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>
-                  {character.notes}
+                  {typeof character.notes === 'string' ? character.notes : 'Nenhuma nota adicionada.'}
                 </Text>
               )}
             </View>

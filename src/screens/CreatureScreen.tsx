@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { EntityCard } from '../components/EntityCard';
@@ -60,11 +61,16 @@ export default function CreatureScreen({ navigation }: any) {
       />
 
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: ACCENT_COLOR }]}
+        style={[styles.fab, { shadowColor: ACCENT_COLOR }]}
         activeOpacity={0.8}
         onPress={() => navigation.navigate('EntityForm', { entityType: 'creature' })}
       >
-        <Ionicons name="add" size={32} color="#fff" />
+        <LinearGradient
+          colors={[ACCENT_COLOR, '#34d399'] as [string, string]}
+          style={styles.fabGradient}
+        >
+          <Ionicons name="add" size={32} color="#fff" />
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -76,13 +82,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     ...Shadows.lg,
     elevation: 8,
     zIndex: 999,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

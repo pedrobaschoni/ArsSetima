@@ -6,19 +6,51 @@ import * as SQLite from 'expo-sqlite';
  */
 class DatabaseService {
   private db: SQLite.SQLiteDatabase | null = null;
+  private initializing: boolean = false;
+
+  /**
+   * Verifica se o banco de dados está inicializado
+   */
+  isInitialized(): boolean {
+    return this.db !== null;
+  }
 
   /**
    * Inicializa o banco de dados e cria as tabelas
    */
   async init(): Promise<void> {
     try {
+      if (this.db) {
+        console.log('Database already initialized');
+        return;
+      }
+      
+      if (this.initializing) {
+        console.log('Database initialization in progress, waiting...');
+        // Espera até que a inicialização termine
+        while (this.initializing) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        return;
+      }
+      
+      this.initializing = true;
+      
       // SDK 54 / expo-sqlite ~16: usar API JSI síncrona para abrir o DB
       this.db = SQLite.openDatabaseSync('arssetima.db');
+      
+      if (!this.db) {
+        throw new Error('Failed to open database');
+      }
+      
       await this.createTables();
       console.log('Database initialized successfully');
     } catch (error) {
       console.error('Error initializing database:', error);
+      this.db = null;
       throw error;
+    } finally {
+      this.initializing = false;
     }
   }
 
@@ -175,8 +207,15 @@ class DatabaseService {
       )`,
     ];
 
-    for (const sql of tables) {
-      await this.db.execAsync(sql);
+    try {
+      // Usar execAsync com await para cada tabela
+      for (const sql of tables) {
+        await this.db.execAsync(sql);
+      }
+      console.log('All tables created successfully');
+    } catch (error) {
+      console.error('Error creating tables:', error);
+      throw error;
     }
   }
 
@@ -184,7 +223,11 @@ class DatabaseService {
    * Executa uma query genérica
    */
   async query<T>(sql: string, params: any[] = []): Promise<T[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) {
+      console.error('Database not initialized - attempting to initialize now');
+      await this.init();
+      if (!this.db) throw new Error('Database initialization failed');
+    }
     try {
       const rows = await this.db.getAllAsync<T>(sql, params);
       return rows;
@@ -198,7 +241,11 @@ class DatabaseService {
    * Executa um comando (INSERT, UPDATE, DELETE)
    */
   async execute(sql: string, params: any[] = []): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) {
+      console.error('Database not initialized - attempting to initialize now');
+      await this.init();
+      if (!this.db) throw new Error('Database initialization failed');
+    }
     try {
       await this.db.runAsync(sql, params);
     } catch (error) {

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
 import { AppSettings } from '../types';
-import { Colors } from './theme';
+import { Colors, getFontSizeMultiplier } from './theme';
 
 interface ThemeContextType {
   theme: 'light' | 'dark';
@@ -9,6 +9,7 @@ interface ThemeContextType {
   toggleTheme: () => void;
   settings: AppSettings;
   updateSettings: (settings: Partial<AppSettings>) => Promise<void>;
+  fontMultiplier: number;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -52,6 +53,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const colors = settings.theme === 'dark' ? Colors.dark : Colors.light;
+  const fontMultiplier = getFontSizeMultiplier(settings.fontSize);
 
   return (
     <ThemeContext.Provider
@@ -61,6 +63,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
         toggleTheme,
         settings,
         updateSettings,
+        fontMultiplier,
       }}
     >
       {children}

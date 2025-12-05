@@ -6,20 +6,28 @@ import { Spacing, BorderRadius } from '../utils/theme';
 import { countWords } from '../utils/helpers';
 
 export default function WritingScreen() {
-  const { colors, settings } = useTheme();
+  const { colors, settings, fontMultiplier } = useTheme();
   const [content, setContent] = useState('');
   const wordCount = countWords(content);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.wordCount, { color: colors.text }]}>
+        <Text style={[styles.wordCount, { color: colors.text, fontSize: 18 * fontMultiplier }]}>
           {wordCount} / {settings.dailyWordGoal} palavras
         </Text>
       </View>
       
       <TextInput
-        style={[styles.textInput, { backgroundColor: colors.surface, color: colors.text }]}
+        style={[
+          styles.textInput, 
+          { 
+            backgroundColor: colors.surface, 
+            color: colors.text,
+            fontSize: 16 * fontMultiplier,
+            lineHeight: 24 * fontMultiplier,
+          }
+        ]}
         multiline
         placeholder="Escreva seu capítulo aqui..."
         placeholderTextColor={colors.textSecondary}
@@ -38,14 +46,12 @@ export default function WritingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { padding: Spacing.md, alignItems: 'center' },
-  wordCount: { fontSize: 18, fontWeight: '600' },
+  wordCount: { fontWeight: '600' },
   textInput: {
     margin: Spacing.md,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
     minHeight: 400,
-    fontSize: 16,
-    lineHeight: 24,
   },
   actions: { padding: Spacing.md },
 });

@@ -55,6 +55,18 @@ export const Typography = {
   },
 };
 
+/**
+ * Multiplicadores de tamanho de fonte baseados na configuração do usuário
+ */
+export const getFontSizeMultiplier = (setting: 'small' | 'medium' | 'large'): number => {
+  switch (setting) {
+    case 'small': return 0.9;
+    case 'medium': return 1.0;
+    case 'large': return 1.15;
+    default: return 1.0;
+  }
+};
+
 export const Spacing = {
   xs: 4,
   sm: 8,

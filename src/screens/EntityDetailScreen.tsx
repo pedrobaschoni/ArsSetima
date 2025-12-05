@@ -16,8 +16,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Button } from '../components/Button';
 import { useTheme } from '../utils/ThemeContext';
 import { Spacing, Colors, BorderRadius, Shadows } from '../utils/theme';
-import { pdfService } from '../services/pdfService';
 import { databaseService } from '../database/migrations';
+import { pdfService } from '../services/pdfService';
 import { parseList } from '../utils/helpers';
 
 const { width } = Dimensions.get('window');
@@ -274,9 +274,43 @@ export default function EntityDetailScreen({ route, navigation }: any) {
   );
 
   const handleExportPDF = async () => {
-    let content = `<h1>${data.name || data.title}</h1><hr/>`;
-    content += `<p><strong>Descrição:</strong> ${data.description || data.content}</p>`;
-    await pdfService.generateCustomPDF(data.name || data.title, content, `${data.name || data.title}.pdf`);
+    const title = data.name || data.title;
+    
+    try {
+      switch (entityType) {
+        case 'spell':
+          await pdfService.generateSpellPDF(title, data);
+          break;
+        case 'item':
+          await pdfService.generateItemPDF(title, data);
+          break;
+        case 'creature':
+          await pdfService.generateCreaturePDF(title, data);
+          break;
+        case 'faction':
+          await pdfService.generateFactionPDF(title, data);
+          break;
+        case 'event':
+          await pdfService.generateEventPDF(title, data);
+          break;
+        case 'note':
+          await pdfService.generateNotePDF(title, data);
+          break;
+        case 'curiosity':
+          await pdfService.generateCuriosityPDF(title, data);
+          break;
+        default:
+          // Para character, location
+          let content = `<h1>${title}</h1><hr/>`;
+          content += `<p><strong>Descrição:</strong> ${data.description || data.content}</p>`;
+          await pdfService.generateCustomPDF(title, content, `${title}.pdf`, entityType);
+      }
+      
+      Alert.alert('Sucesso', 'PDF exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      Alert.alert('Erro', 'Falha ao exportar PDF');
+    }
   };
 
   // Função para formatar a importância em português

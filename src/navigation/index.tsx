@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../utils/ThemeContext';
 import { Colors } from '../utils/theme';
+import { CommonActions } from '@react-navigation/native';
 
 import HomeScreen from '../screens/HomeScreen';
 import EncyclopediaScreen from '../screens/EncyclopediaScreen';
@@ -79,6 +80,13 @@ const LocationStack = () => {
 
 const EncyclopediaStack = () => {
   const { colors } = useTheme();
+  const [shouldReset, setShouldReset] = React.useState(false);
+  
+  React.useEffect(() => {
+    if (shouldReset) {
+      setShouldReset(false);
+    }
+  }, [shouldReset]);
   
   return (
     <Stack.Navigator
@@ -91,6 +99,7 @@ const EncyclopediaStack = () => {
         name="EncyclopediaHome"
         component={EncyclopediaScreen}
         options={{ title: 'Enciclopédia' }}
+        initialParams={{ reset: shouldReset }}
       />
       <Stack.Screen
         name="Characters"
@@ -176,7 +185,25 @@ const MainTabs = () => {
       <Tab.Screen
         name="EncyclopediaTab"
         component={EncyclopediaStack}
-        options={{ title: 'Enciclopédia', headerShown: false }}
+        options={{ 
+          title: 'Enciclopédia', 
+          headerShown: false
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // Quando clicar na aba, verifica se está em uma sub-tela
+            const state = navigation.getState();
+            const encyclopediaRoute = state.routes.find(r => r.name === 'EncyclopediaTab');
+            
+            if (encyclopediaRoute?.state?.index && encyclopediaRoute.state.index > 0) {
+              // Se estiver em uma sub-tela, reseta para a inicial
+              e.preventDefault();
+              navigation.navigate('EncyclopediaTab', {
+                screen: 'EncyclopediaHome'
+              });
+            }
+          }
+        })}
       />
       <Tab.Screen
         name="Timeline"
